@@ -1,0 +1,93 @@
+# claude-workflow manifest — 勿手动编辑
+# 用于 update.sh 追踪模板文件状态
+version: "1.0.0"
+created: "2026-03-02T13:06:07Z"
+updated: "2026-03-02T13:06:07Z"
+files:
+  .claude/commands/opsx/apply.md:
+    template_hash: "dfa3a02a56d59fc78cc78963408f9462b0fae42c0221943359819acb7c0d5475"
+    current_hash: "dfa3a02a56d59fc78cc78963408f9462b0fae42c0221943359819acb7c0d5475"
+  .claude/commands/opsx/archive.md:
+    template_hash: "7eb0ade46927bdb07c7e00b75932e93c4c80c850d841f3f2c46d6e67e33416b4"
+    current_hash: "7eb0ade46927bdb07c7e00b75932e93c4c80c850d841f3f2c46d6e67e33416b4"
+  .claude/commands/opsx/bulk-archive.md:
+    template_hash: "76d778f9600afc0441f0d57884538f2d75245caa5966fbd462106cbb1f161db9"
+    current_hash: "76d778f9600afc0441f0d57884538f2d75245caa5966fbd462106cbb1f161db9"
+  .claude/commands/opsx/continue.md:
+    template_hash: "c5770a5e2de13a83435c6599c7113a49c3008480f85239739848843c8f9716ff"
+    current_hash: "c5770a5e2de13a83435c6599c7113a49c3008480f85239739848843c8f9716ff"
+  .claude/commands/opsx/explore.md:
+    template_hash: "8f3b7ad02227287f45194b7e3c4867f9248c10117d4e6f7904094e6c16fa2ae2"
+    current_hash: "8f3b7ad02227287f45194b7e3c4867f9248c10117d4e6f7904094e6c16fa2ae2"
+  .claude/commands/opsx/ff.md:
+    template_hash: "1868acb04d79bdbaf0cea2a92c1c4653797cbbda10fce905ecaeb6511b204aab"
+    current_hash: "1868acb04d79bdbaf0cea2a92c1c4653797cbbda10fce905ecaeb6511b204aab"
+  .claude/commands/opsx/new.md:
+    template_hash: "6cbc55fc0603cdfdbbc01199f10f71d97e1b233c9fec820a410898197193575a"
+    current_hash: "6cbc55fc0603cdfdbbc01199f10f71d97e1b233c9fec820a410898197193575a"
+  .claude/commands/opsx/onboard.md:
+    template_hash: "f835ec8dd6a30ead83894ff1215d017909a207380ef9f051cbb2a708f3cd57a2"
+    current_hash: "f835ec8dd6a30ead83894ff1215d017909a207380ef9f051cbb2a708f3cd57a2"
+  .claude/commands/opsx/sync.md:
+    template_hash: "a6fc9fc51c3e0d685570ba34a1c2c6084d3f64263e28fba580c59069d3eaaa34"
+    current_hash: "a6fc9fc51c3e0d685570ba34a1c2c6084d3f64263e28fba580c59069d3eaaa34"
+  .claude/commands/opsx/verify.md:
+    template_hash: "53f6dd4adf93051ad78b8ce9f0d761c1dc71e4c9936480ffb110bcec1b42b206"
+    current_hash: "53f6dd4adf93051ad78b8ce9f0d761c1dc71e4c9936480ffb110bcec1b42b206"
+  .claude/skills/openspec-apply-change/SKILL.md:
+    template_hash: "3df376a13f56495218683004a3184e72af54c4f3a09df3c7e98d4768e01999ed"
+    current_hash: "3df376a13f56495218683004a3184e72af54c4f3a09df3c7e98d4768e01999ed"
+  .claude/skills/openspec-archive-change/SKILL.md:
+    template_hash: "a2717ab2b458797c8a63b4c36d0241e7a1e74ed08a671ec15c5162bf31f64265"
+    current_hash: "a2717ab2b458797c8a63b4c36d0241e7a1e74ed08a671ec15c5162bf31f64265"
+  .claude/skills/openspec-bulk-archive-change/SKILL.md:
+    template_hash: "d3f369c1e67f05b6b04f7da2f87bad09759307dbdc7c23773c9ef1ccc74dfb33"
+    current_hash: "d3f369c1e67f05b6b04f7da2f87bad09759307dbdc7c23773c9ef1ccc74dfb33"
+  .claude/skills/openspec-continue-change/SKILL.md:
+    template_hash: "7d57494005707dd172e4fcb9dd5beaef8879ca9a0046532812bc79be5359eeac"
+    current_hash: "7d57494005707dd172e4fcb9dd5beaef8879ca9a0046532812bc79be5359eeac"
+  .claude/skills/openspec-explore/SKILL.md:
+    template_hash: "64ded43c11f45d9be10670202659bbbb81bb70e4fd67d3579ae31f1a1f693911"
+    current_hash: "64ded43c11f45d9be10670202659bbbb81bb70e4fd67d3579ae31f1a1f693911"
+  .claude/skills/openspec-ff-change/SKILL.md:
+    template_hash: "3cc7ec17d00ac9d801613555f66525f0a9841160b486e0240b25c76c41fc3def"
+    current_hash: "3cc7ec17d00ac9d801613555f66525f0a9841160b486e0240b25c76c41fc3def"
+  .claude/skills/openspec-new-change/SKILL.md:
+    template_hash: "7a9e54256ebae75b84e974ebd67c8e8ae83c83932629d702881ecf402fbd6aca"
+    current_hash: "7a9e54256ebae75b84e974ebd67c8e8ae83c83932629d702881ecf402fbd6aca"
+  .claude/skills/openspec-onboard/SKILL.md:
+    template_hash: "058b568a743796bd5b553f5def11969ffdae691cc117472ac4e011e9b0c034e5"
+    current_hash: "058b568a743796bd5b553f5def11969ffdae691cc117472ac4e011e9b0c034e5"
+  .claude/skills/openspec-sync-specs/SKILL.md:
+    template_hash: "78a33a6c94ce3951fad67b6d50d560fd791053b0d1a3342c69538292ae7b8d00"
+    current_hash: "78a33a6c94ce3951fad67b6d50d560fd791053b0d1a3342c69538292ae7b8d00"
+  .claude/skills/openspec-verify-change/SKILL.md:
+    template_hash: "94c988710e2a023267693792d262cec67c402ede77fcc898b632c2b3f5959356"
+    current_hash: "94c988710e2a023267693792d262cec67c402ede77fcc898b632c2b3f5959356"
+  CLAUDE.md:
+    template_hash: "3f0be9e3c612aa5ab687cdac76c11fbdf40941759aa53923c8749dffe3dec2c2"
+    current_hash: "3f0be9e3c612aa5ab687cdac76c11fbdf40941759aa53923c8749dffe3dec2c2"
+  agents/coder.md:
+    template_hash: "b901281502134013a3939fb762ce63931a34bd8c6b0a0ba37bd406bcaad2f402"
+    current_hash: "b901281502134013a3939fb762ce63931a34bd8c6b0a0ba37bd406bcaad2f402"
+  agents/designer.md:
+    template_hash: "33d73c69658225cdf0d3d795f4fbc2cd4e2bc89a76b6607127cd02bda3358bfa"
+    current_hash: "33d73c69658225cdf0d3d795f4fbc2cd4e2bc89a76b6607127cd02bda3358bfa"
+  agents/reviewer.md:
+    template_hash: "9bb6ec6c85336896d70c23705c5a15db99feb33a37bec6c49aad180ed5d7f57d"
+    current_hash: "9bb6ec6c85336896d70c23705c5a15db99feb33a37bec6c49aad180ed5d7f57d"
+  agents/spec-writer.md:
+    template_hash: "ca343b68244aa3d08404c41335ed9fc0ae75eeca38488c2b4d20786ec02b2f2e"
+    current_hash: "ca343b68244aa3d08404c41335ed9fc0ae75eeca38488c2b4d20786ec02b2f2e"
+  agents/test-executor.md:
+    template_hash: "08e63efc41d5db48e8bbbe83b0d1d2d2f8772d6155c6eb038d36c44c988bc74b"
+    current_hash: "08e63efc41d5db48e8bbbe83b0d1d2d2f8772d6155c6eb038d36c44c988bc74b"
+  agents/test-strategist.md:
+    template_hash: "924e6762cf95b9591c942556f1c6b3b40231537b997952c69eb3579cb330c1b0"
+    current_hash: "924e6762cf95b9591c942556f1c6b3b40231537b997952c69eb3579cb330c1b0"
+  docs/cli-setup.md:
+    template_hash: "f0690ebbcb1c2850a54c4f4f91ac9dcf32378266de9af9bca4f43fc9839b84dc"
+    current_hash: "f0690ebbcb1c2850a54c4f4f91ac9dcf32378266de9af9bca4f43fc9839b84dc"
+  openspec/config.yaml:
+    template_hash: "7f64d2448e1c83ffa6f2f3398b742fb5f2d4d3ea47b2c540a9076484977026b4"
+    current_hash: "7f64d2448e1c83ffa6f2f3398b742fb5f2d4d3ea47b2c540a9076484977026b4"

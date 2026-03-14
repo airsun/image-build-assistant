@@ -1,0 +1,9 @@
+projects:
+  - name: claude-code-hub
+    source_dir: ../claude-code-hub
+    dockerfile_path: deploy/Dockerfile
+    build_context: .
+    image_name: claude-code-hub
+    harbor_project: library
+    platform: linux/amd64
+    enabled: true
