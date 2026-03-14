@@ -3,10 +3,10 @@ set -euo pipefail
 
 TEST_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ASSISTANT_ROOT="$(cd "${TEST_DIR}/.." && pwd)"
-PROJECTS_FILE="${ASSISTANT_ROOT}/config/projects.yaml"
+PROJECTS_FILE="${ASSISTANT_ROOT}/image-builder/projects.yaml"
 
-# shellcheck source=../lib/project-resolver.sh
-source "${ASSISTANT_ROOT}/lib/project-resolver.sh"
+# shellcheck source=../image-builder/scripts/project-resolver.sh
+source "${ASSISTANT_ROOT}/image-builder/scripts/project-resolver.sh"
 
 fail() {
   printf 'FAIL: %s\n' "$*" >&2

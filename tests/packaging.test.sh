@@ -4,8 +4,8 @@ set -euo pipefail
 TEST_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ASSISTANT_ROOT="$(cd "${TEST_DIR}/.." && pwd)"
 
-# shellcheck source=../lib/packaging.sh
-source "${ASSISTANT_ROOT}/lib/packaging.sh"
+# shellcheck source=../image-builder/scripts/packaging.sh
+source "${ASSISTANT_ROOT}/image-builder/scripts/packaging.sh"
 
 TEST_TMPDIR="$(mktemp -d "/tmp/packaging-test.XXXXXX")"
 trap 'rm -rf "${TEST_TMPDIR}"' EXIT

@@ -6,14 +6,14 @@
 
 - `deploy/remote-build.sh`：保留为**兼容入口**
 - `deploy/remote-build-entry.sh`：已废弃，不再直接执行
-- 新的主入口：`image-build-assistant/bin/build-image.sh`
+- 新的主入口：`image-build-assistant/image-builder/build.sh`
 
 ## 推荐用法
 
 优先直接使用独立助手：
 
 ```bash
-bash image-build-assistant/bin/build-image.sh --project claude-code-hub
+bash image-build-assistant/image-builder/build.sh --project claude-code-hub
 ```
 
 如果你仍然执行旧入口：

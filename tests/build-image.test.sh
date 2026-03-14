@@ -4,8 +4,8 @@ set -euo pipefail
 TEST_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ASSISTANT_ROOT="$(cd "${TEST_DIR}/.." && pwd)"
 
-# shellcheck source=../bin/build-image.sh
-source "${ASSISTANT_ROOT}/bin/build-image.sh"
+# shellcheck source=../image-builder/build.sh
+source "${ASSISTANT_ROOT}/image-builder/build.sh"
 
 TEST_TMPDIR="$(mktemp -d "/tmp/build-image-test.XXXXXX")"
 trap 'rm -rf "${TEST_TMPDIR}"' EXIT
@@ -36,8 +36,8 @@ assert_contains() {
 }
 
 reload_build_image_script() {
-  # shellcheck source=../bin/build-image.sh
-  source "${ASSISTANT_ROOT}/bin/build-image.sh"
+  # shellcheck source=../image-builder/build.sh
+  source "${ASSISTANT_ROOT}/image-builder/build.sh"
 }
 
 remote_env="${TEST_TMPDIR}/remote.env"

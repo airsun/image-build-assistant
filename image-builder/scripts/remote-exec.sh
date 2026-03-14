@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-REMOTE_EXEC_SCRIPT_DIR="${REMOTE_EXEC_SCRIPT_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/remote}"
+REMOTE_EXEC_SCRIPT_DIR="${REMOTE_EXEC_SCRIPT_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)}"
 
 remote_exec_error() {
   printf '%s\n' "$*" >&2

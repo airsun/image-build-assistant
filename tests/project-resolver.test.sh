@@ -4,8 +4,8 @@ set -euo pipefail
 TEST_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ASSISTANT_ROOT="$(cd "${TEST_DIR}/.." && pwd)"
 
-# shellcheck source=../lib/project-resolver.sh
-source "${ASSISTANT_ROOT}/lib/project-resolver.sh"
+# shellcheck source=../image-builder/scripts/project-resolver.sh
+source "${ASSISTANT_ROOT}/image-builder/scripts/project-resolver.sh"
 
 TEST_TMPDIR="$(mktemp -d "/tmp/project-resolver-test.XXXXXX")"
 trap 'rm -rf "${TEST_TMPDIR}"' EXIT

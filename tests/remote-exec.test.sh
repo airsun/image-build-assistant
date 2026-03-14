@@ -4,10 +4,10 @@ set -euo pipefail
 TEST_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ASSISTANT_ROOT="$(cd "${TEST_DIR}/.." && pwd)"
 
-# shellcheck source=../lib/remote-exec.sh
-source "${ASSISTANT_ROOT}/lib/remote-exec.sh"
-# shellcheck source=../remote/remote-build-entry.sh
-source "${ASSISTANT_ROOT}/remote/remote-build-entry.sh"
+# shellcheck source=../image-builder/scripts/remote-exec.sh
+source "${ASSISTANT_ROOT}/image-builder/scripts/remote-exec.sh"
+# shellcheck source=../image-builder/scripts/remote-build-entry.sh
+source "${ASSISTANT_ROOT}/image-builder/scripts/remote-build-entry.sh"
 
 TEST_TMPDIR="$(mktemp -d "/tmp/remote-exec-test.XXXXXX")"
 trap 'rm -rf "${TEST_TMPDIR}"' EXIT
@@ -90,7 +90,7 @@ test_remote_exec_upload_and_execute_contract() {
   PUSH="true"
   BUILD_CONTEXT="."
   DOCKERFILE_PATH="deploy/Dockerfile"
-  REMOTE_EXEC_SCRIPT_DIR="${ASSISTANT_ROOT}/remote"
+  REMOTE_EXEC_SCRIPT_DIR="${ASSISTANT_ROOT}/image-builder/scripts"
 
   ssh() {
     printf '%s\n' "$*" >> "${ssh_log}"
@@ -108,7 +108,7 @@ test_remote_exec_upload_and_execute_contract() {
   assert_contains "$(cat "${scp_log}")" "-P 2222" "scp uploads should use uppercase port option"
   assert_contains "$(cat "${scp_log}")" "${archive_path}" "should upload context archive"
   assert_contains "$(cat "${scp_log}")" "${dockerfile_path}" "should upload dockerfile"
-  assert_contains "$(cat "${scp_log}")" "${ASSISTANT_ROOT}/remote/remote-build-entry.sh" "should upload remote entry script"
+  assert_contains "$(cat "${scp_log}")" "${ASSISTANT_ROOT}/image-builder/scripts/remote-build-entry.sh" "should upload remote entry script"
   assert_contains "$(cat "${scp_log}")" "deploy@builder.example.internal:/srv/image-build-assistant/context-run-001.tar.gz" "should upload context archive to contract path"
   assert_contains "$(cat "${scp_log}")" "deploy@builder.example.internal:/srv/image-build-assistant/dockerfile-run-001" "should upload dockerfile to contract path"
   assert_contains "$(cat "${ssh_log}")" "RUN_ID=run-001" "should pass run id to remote entry"
@@ -132,7 +132,7 @@ test_remote_entry_builds_and_pushes_root_context() {
 
   (
     set -euo pipefail
-    source "${ASSISTANT_ROOT}/remote/remote-build-entry.sh"
+    source "${ASSISTANT_ROOT}/image-builder/scripts/remote-build-entry.sh"
 
     REMOTE_BASE_DIR="${base_dir}"
     RUN_ID="run-root"
@@ -200,7 +200,7 @@ test_remote_entry_builds_subdir_context_without_push() {
 
   (
     set -euo pipefail
-    source "${ASSISTANT_ROOT}/remote/remote-build-entry.sh"
+    source "${ASSISTANT_ROOT}/image-builder/scripts/remote-build-entry.sh"
 
     REMOTE_BASE_DIR="${base_dir}"
     RUN_ID="run-subdir"

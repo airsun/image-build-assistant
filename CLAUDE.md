@@ -198,11 +198,12 @@ spec-writer → designer → coder → reviewer → test-strategist → test-exe
 ## 目录约定
 
 ```
-bin/                 统一命令入口
-lib/                 公共函数库（打包、项目解析、远端执行）
-config/              远端配置 + 项目注册表
-remote/              上传到远端执行的脚本
-logs/                构建日志（按项目分目录，不纳入版本控制）
+image-builder/             用户使用的工具目录
+  build.sh                 统一构建入口
+  projects.yaml            项目注册表
+  remote.env.example       远端配置模板
+  scripts/                 公共函数库 + 远端入口脚本
+  logs/                    构建日志（按项目分目录，不纳入版本控制）
 agents/              各 agent 角色定义（独立可替换）
 docs/
   specs/             OpenSpec 规范文档

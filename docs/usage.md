@@ -12,12 +12,11 @@
 
 ## 目录说明
 
-- `bin/build-image.sh`：统一入口命令
-- `config/remote.env`：远端 SSH / Harbor 默认配置
-- `config/projects.yaml`：项目注册表
-- `lib/`：项目解析、打包、远端执行公共逻辑
-- `remote/remote-build-entry.sh`：上传到远端后执行的入口
-- `logs/`：构建日志（按项目名分目录）
+- `image-builder/build.sh`：统一入口命令
+- `image-builder/remote.env`：远端 SSH / Harbor 默认配置
+- `image-builder/projects.yaml`：项目注册表
+- `image-builder/scripts/`：项目解析、打包、远端执行公共逻辑
+- `image-builder/logs/`：构建日志（按项目名分目录）
 - `tests/`：脚本级 smoke tests
 
 ## 配置说明
@@ -27,7 +26,7 @@
 先复制模板：
 
 ```bash
-cp config/remote.env.example config/remote.env
+cp image-builder/remote.env.example image-builder/remote.env
 ```
 
 典型字段包括：
@@ -67,13 +66,13 @@ cp config/remote.env.example config/remote.env
 按项目名执行：
 
 ```bash
-bash bin/build-image.sh --project claude-code-hub
+bash image-builder/build.sh --project claude-code-hub
 ```
 
 如果需要临时覆盖参数，可以追加：
 
 ```bash
-bash bin/build-image.sh \
+bash image-builder/build.sh \
   --project claude-code-hub \
   --version v1.2.3 \
   --platform linux/amd64
@@ -82,7 +81,7 @@ bash bin/build-image.sh \
 也可以不用注册表，直接手工指定路径：
 
 ```bash
-bash bin/build-image.sh \
+bash image-builder/build.sh \
   --source-dir /path/to/project \
   --dockerfile-path deploy/Dockerfile \
   --build-context .

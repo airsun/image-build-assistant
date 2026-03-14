@@ -10,13 +10,13 @@ fail() {
 }
 
 required_paths=(
-  "bin/build-image.sh"
-  "config/remote.env.example"
-  "config/projects.yaml"
-  "lib/packaging.sh"
-  "lib/project-resolver.sh"
-  "lib/remote-exec.sh"
-  "remote/remote-build-entry.sh"
+  "image-builder/build.sh"
+  "image-builder/remote.env.example"
+  "image-builder/projects.yaml"
+  "image-builder/scripts/packaging.sh"
+  "image-builder/scripts/project-resolver.sh"
+  "image-builder/scripts/remote-exec.sh"
+  "image-builder/scripts/remote-build-entry.sh"
   "docs/usage.md"
 )
 

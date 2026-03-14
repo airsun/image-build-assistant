@@ -3,16 +3,16 @@ set -euo pipefail
 
 BUILD_IMAGE_SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BUILD_IMAGE_ASSISTANT_ROOT="$(cd "${BUILD_IMAGE_SCRIPT_DIR}/.." && pwd)"
-BUILD_IMAGE_DEFAULT_CONFIG="${BUILD_IMAGE_ASSISTANT_ROOT}/config/remote.env"
-BUILD_IMAGE_DEFAULT_PROJECTS="${BUILD_IMAGE_ASSISTANT_ROOT}/config/projects.yaml"
+BUILD_IMAGE_DEFAULT_CONFIG="${BUILD_IMAGE_SCRIPT_DIR}/remote.env"
+BUILD_IMAGE_DEFAULT_PROJECTS="${BUILD_IMAGE_SCRIPT_DIR}/projects.yaml"
 BUILD_IMAGE_LOG_PREFIX="[image-build-assistant]"
 
-# shellcheck source=../lib/project-resolver.sh
-source "${BUILD_IMAGE_ASSISTANT_ROOT}/lib/project-resolver.sh"
-# shellcheck source=../lib/packaging.sh
-source "${BUILD_IMAGE_ASSISTANT_ROOT}/lib/packaging.sh"
-# shellcheck source=../lib/remote-exec.sh
-source "${BUILD_IMAGE_ASSISTANT_ROOT}/lib/remote-exec.sh"
+# shellcheck source=scripts/project-resolver.sh
+source "${BUILD_IMAGE_SCRIPT_DIR}/scripts/project-resolver.sh"
+# shellcheck source=scripts/packaging.sh
+source "${BUILD_IMAGE_SCRIPT_DIR}/scripts/packaging.sh"
+# shellcheck source=scripts/remote-exec.sh
+source "${BUILD_IMAGE_SCRIPT_DIR}/scripts/remote-exec.sh"
 
 build_image_log() {
   printf '%s %s\n' "${BUILD_IMAGE_LOG_PREFIX}" "$*"
@@ -239,7 +239,7 @@ build_image_validate_inputs() {
 }
 
 build_image_setup_logging() {
-  local log_dir="${BUILD_IMAGE_ASSISTANT_ROOT}/logs/${PROJECT_NAME}"
+  local log_dir="${BUILD_IMAGE_SCRIPT_DIR}/logs/${PROJECT_NAME}"
   local log_timestamp="${BUILD_IMAGE_NOW:-$(date '+%Y%m%d-%H%M%S')}"
   BUILD_IMAGE_LOG_FILE="${log_dir}/${log_timestamp}.log"
 
