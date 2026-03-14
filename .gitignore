@@ -3,3 +3,16 @@ config/remote.env
 
 # 构建日志（本地留存，不纳入版本控制）
 logs/
+
+# 系统文件
+.DS_Store
+
+# 环境变量
+.env
+.env.*
+!.env.example
+
+# 编辑器
+*.swp
+*.swo
+*~

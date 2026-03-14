@@ -95,7 +95,7 @@ bash bin/build-image.sh \
 建议先在远端构建机上用构建账号执行：
 
 ```bash
-docker login harbor.tech.skytech.io
+docker login <your-harbor-host>
 ```
 
 后续助手会复用远端当前账号的 Docker 登录态。

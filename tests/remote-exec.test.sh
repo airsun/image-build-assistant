@@ -82,7 +82,7 @@ test_remote_exec_upload_and_execute_contract() {
   REMOTE_USER="deploy"
   SSH_KEY_PATH="${case_dir}/id_test"
   REMOTE_BASE_DIR="/srv/image-build-assistant"
-  HARBOR_HOST="harbor.tech.skytech.io"
+  HARBOR_HOST="harbor.test.example.com"
   HARBOR_PROJECT="library"
   IMAGE_NAME="claude-code-hub"
   VERSION="v1.0.0"
@@ -140,7 +140,7 @@ test_remote_entry_builds_and_pushes_root_context() {
     UPLOADED_DOCKERFILE_PATH="${uploaded_dockerfile}"
     DOCKERFILE_PATH="deploy/Dockerfile"
     BUILD_CONTEXT="."
-    HARBOR_HOST="harbor.tech.skytech.io"
+    HARBOR_HOST="harbor.test.example.com"
     HARBOR_PROJECT="library"
     IMAGE_NAME="claude-code-hub"
     VERSION="v2.0.0"
@@ -177,9 +177,9 @@ test_remote_entry_builds_and_pushes_root_context() {
 
   assert_eq "${status}" "0" "remote entry should succeed for root context"
   assert_file_exists "${base_dir}/docker.log" "docker log should be captured"
-  assert_contains "$(cat "${base_dir}/docker.log")" "build --platform linux/amd64 -f ${base_dir}/runs/run-root/incoming/dockerfiles/deploy/Dockerfile -t harbor.tech.skytech.io/library/claude-code-hub:v2.0.0 -t harbor.tech.skytech.io/library/claude-code-hub:latest ${base_dir}/runs/run-root/workspace/context" "docker build should target run-scoped root context and staged dockerfile path"
-  assert_contains "$(cat "${base_dir}/docker.log")" "push harbor.tech.skytech.io/library/claude-code-hub:v2.0.0" "docker push should include version tag"
-  assert_contains "$(cat "${base_dir}/docker.log")" "push harbor.tech.skytech.io/library/claude-code-hub:latest" "docker push should include latest tag"
+  assert_contains "$(cat "${base_dir}/docker.log")" "build --platform linux/amd64 -f ${base_dir}/runs/run-root/incoming/dockerfiles/deploy/Dockerfile -t harbor.test.example.com/library/claude-code-hub:v2.0.0 -t harbor.test.example.com/library/claude-code-hub:latest ${base_dir}/runs/run-root/workspace/context" "docker build should target run-scoped root context and staged dockerfile path"
+  assert_contains "$(cat "${base_dir}/docker.log")" "push harbor.test.example.com/library/claude-code-hub:v2.0.0" "docker push should include version tag"
+  assert_contains "$(cat "${base_dir}/docker.log")" "push harbor.test.example.com/library/claude-code-hub:latest" "docker push should include latest tag"
   assert_dir_exists "${base_dir}/runs/run-root/incoming" "run-scoped incoming dir should exist"
   assert_dir_exists "${base_dir}/runs/run-root/workspace" "run-scoped workspace dir should exist"
   assert_dir_exists "${base_dir}/runs/run-root/logs" "run-scoped logs dir should exist"
@@ -208,7 +208,7 @@ test_remote_entry_builds_subdir_context_without_push() {
     UPLOADED_DOCKERFILE_PATH="${uploaded_dockerfile}"
     DOCKERFILE_PATH="docker/Dockerfile"
     BUILD_CONTEXT="app"
-    HARBOR_HOST="harbor.tech.skytech.io"
+    HARBOR_HOST="harbor.test.example.com"
     HARBOR_PROJECT="services"
     IMAGE_NAME="worker"
     VERSION="v3.0.0"
@@ -239,7 +239,7 @@ test_remote_entry_builds_subdir_context_without_push() {
   ) || status=$?
 
   assert_eq "${status}" "0" "remote entry should succeed for subdir context"
-  assert_contains "$(cat "${base_dir}/docker.log")" "build --platform linux/arm64 -f ${base_dir}/runs/run-subdir/incoming/dockerfiles/docker/Dockerfile -t harbor.tech.skytech.io/services/worker:v3.0.0 -t harbor.tech.skytech.io/services/worker:latest ${base_dir}/runs/run-subdir/workspace/context/app" "docker build should target run-scoped subdir context and staged dockerfile path"
+  assert_contains "$(cat "${base_dir}/docker.log")" "build --platform linux/arm64 -f ${base_dir}/runs/run-subdir/incoming/dockerfiles/docker/Dockerfile -t harbor.test.example.com/services/worker:v3.0.0 -t harbor.test.example.com/services/worker:latest ${base_dir}/runs/run-subdir/workspace/context/app" "docker build should target run-scoped subdir context and staged dockerfile path"
   if grep -q "push " "${base_dir}/docker.log"; then
     fail "docker push should not run when PUSH=false"
   fi

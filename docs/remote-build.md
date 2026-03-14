@@ -46,7 +46,7 @@ deploy/remote-build.env
 建议先在远端构建机执行：
 
 ```bash
-docker login harbor.tech.skytech.io
+docker login <your-harbor-host>
 ```
 
 后续独立助手会复用远端当前账号的 Docker 登录态。

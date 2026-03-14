@@ -57,7 +57,7 @@ build_image_load_remote_config() {
   REMOTE_USER="${REMOTE_USER:-}"
   SSH_KEY_PATH="${SSH_KEY_PATH:-}"
   REMOTE_BASE_DIR="${REMOTE_BASE_DIR:-}"
-  HARBOR_HOST="${HARBOR_HOST:-harbor.tech.skytech.io}"
+  HARBOR_HOST="${HARBOR_HOST:-}"
   DEFAULT_HARBOR_PROJECT="${HARBOR_PROJECT:-library}"
   DEFAULT_PLATFORM="${PLATFORM:-linux/amd64}"
   PUSH="${PUSH:-true}"
@@ -76,6 +76,10 @@ build_image_load_remote_config() {
   }
   [[ -n "${REMOTE_BASE_DIR}" ]] || {
     build_image_die "Missing required remote config: REMOTE_BASE_DIR"
+    return 1
+  }
+  [[ -n "${HARBOR_HOST}" ]] || {
+    build_image_die "Missing required remote config: HARBOR_HOST"
     return 1
   }
 }

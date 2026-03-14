@@ -51,7 +51,7 @@ remote_entry_init() {
   UPLOADED_DOCKERFILE_PATH="${UPLOADED_DOCKERFILE_PATH:-}"
   DOCKERFILE_PATH="${DOCKERFILE_PATH:-}"
   BUILD_CONTEXT="${BUILD_CONTEXT:-.}"
-  HARBOR_HOST="${HARBOR_HOST:-harbor.tech.skytech.io}"
+  HARBOR_HOST="${HARBOR_HOST:-}"
   HARBOR_PROJECT="${HARBOR_PROJECT:-library}"
   IMAGE_NAME="${IMAGE_NAME:-image-build-assistant}"
   VERSION="${VERSION:-latest}"
@@ -60,6 +60,10 @@ remote_entry_init() {
 
   [[ -n "${REMOTE_BASE_DIR}" ]] || {
     remote_entry_error "REMOTE_BASE_DIR is required"
+    return 1
+  }
+  [[ -n "${HARBOR_HOST}" ]] || {
+    remote_entry_error "HARBOR_HOST is required"
     return 1
   }
   [[ -n "${RUN_ID}" ]] || {
