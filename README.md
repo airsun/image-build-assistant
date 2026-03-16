@@ -88,7 +88,9 @@ bash image-builder/build.sh --project my-app
 
 可选字段：`image_name`（默认取目录名）、`harbor_project`、`platform`、`enabled`。
 
-`source_dir` 支持相对路径，相对于 `projects.yaml` 所在目录解析。
+版本管理字段：`version`（semver 格式）、`built_commit`（上次构建的 commit hash）。构建成功后由 AI 层自动更新。
+
+`source_dir` 支持绝对路径和相对路径，相对路径基于 `projects.yaml` 所在目录解析。
 
 ## 命令参考
 
@@ -104,7 +106,7 @@ bash image-builder/build.sh [选项]
 | `--build-context PATH` | 构建上下文相对于 source-dir 的路径 |
 | `--image-name NAME` | 覆盖镜像名 |
 | `--harbor-project NAME` | 覆盖 Harbor 项目 |
-| `--version TAG` | 指定版本标签（默认时间戳） |
+| `--version TAG` | 指定版本标签 |
 | `--platform PLATFORM` | 覆盖构建平台 |
 | `--push true\|false` | 是否推送到 Harbor |
 | `--config PATH` | 指定 remote.env 路径 |
@@ -121,6 +123,77 @@ bash tests/packaging.test.sh
 bash tests/claude-code-hub-registration.test.sh
 bash tests/docs-smoke.test.sh
 ```
+
+## 通过 AI 环境使用
+
+本项目设计为在 Claude Code 等 AI 编程环境中使用。AI 作为协调者，负责分析项目、决策版本号、调用构建脚本、回写状态。你只需要用自然语言描述意图。
+
+### 典型指令与效果
+
+**新项目首次构建：**
+
+```
+> 新项目构建，目录在 ../../vibe-me/claude-code-hub
+```
+
+AI 会：
+1. 分析目标目录结构，找到 Dockerfile
+2. 注册项目到 `projects.yaml`（如果尚未注册）
+3. 设定初始版本号，执行构建并推送到 Harbor
+4. 回写 `version` 和 `built_commit` 到 `projects.yaml`
+
+**日常迭代构建：**
+
+```
+> 构建 claude-code-hub
+```
+
+AI 会：
+1. 读取 `projects.yaml` 中的 `version` 和 `built_commit`
+2. 对比源码仓库 HEAD — 有新 commit 则自动 bump patch（如 1.0.0 → 1.0.1）并构建
+3. 无新 commit 则告知"镜像已是最新"，不执行构建
+
+**指定版本号：**
+
+```
+> 构建 claude-code-hub，版本 2.0.0
+```
+
+AI 会校验指定版本 > 当前版本后使用该值。如果指定的版本 <= 当前版本，会拒绝并提示。
+
+**无变更但坚持构建：**
+
+```
+> 构建 claude-code-hub
+< 镜像已是最新（commit: d74e7e1），无需构建
+> 还是构建一下
+```
+
+AI 会 bump patch 后执行构建 — 每次构建都产生新版本号，不存在重复版本。
+
+**覆盖构建（明确意图）：**
+
+```
+> 重新构建 claude-code-hub，覆盖当前版本
+```
+
+AI 识别到覆盖意图，bump patch 后构建推送。
+
+### 版本管理规则
+
+| 场景 | 行为 |
+|------|------|
+| 首次构建（`built_commit` 为空） | 使用 yaml 中的 `version` 值 |
+| 有新 commit | 自动 bump patch，构建推送 |
+| 无新 commit | 默认不构建，用户坚持则 bump 后构建 |
+| 用户指定版本 | 校验 > 当前版本后使用 |
+| 版本倒退 | 拒绝，提示当前版本 |
+
+### 前置条件
+
+- 在 Claude Code 会话中打开本仓库
+- 已配置 `image-builder/remote.env`（远端构建机 SSH 和 Harbor 参数）
+- 目标项目有可用的 Dockerfile
 
 ## 开发协调
 
