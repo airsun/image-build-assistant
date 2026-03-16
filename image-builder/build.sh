@@ -52,6 +52,10 @@ build_image_load_remote_config() {
   # shellcheck disable=SC1090
   source "${config_path}"
 
+  # These are per-project/per-build settings, not remote config.
+  # Unset to prevent source residue from polluting merge_project_settings().
+  unset IMAGE_NAME VERSION
+
   REMOTE_HOST="${REMOTE_HOST:-}"
   REMOTE_PORT="${REMOTE_PORT:-22}"
   REMOTE_USER="${REMOTE_USER:-}"

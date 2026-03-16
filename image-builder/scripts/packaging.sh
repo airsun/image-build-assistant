@@ -6,7 +6,7 @@ packaging_error() {
 }
 
 default_excludes() {
-  printf '%s\n' ".git" "node_modules" ".next" "coverage" "dist"
+  printf '%s\n' ".git" "node_modules" ".next" "coverage" "dist" ".DS_Store"
 }
 
 resolve_build_context_path() {
@@ -52,6 +52,11 @@ create_build_context_archive() {
   local exclude_name=""
 
   context_path="$(resolve_build_context_path "${source_dir}" "${build_context}")"
+
+  # Prevent macOS BSD tar from embedding AppleDouble resource fork
+  # files (._*) that cause parse errors on Linux build hosts.
+  export COPYFILE_DISABLE=1
+  tar_args+=("--exclude=._*")
 
   if [[ "${build_context}" == "." ]]; then
     while IFS= read -r exclude_name; do
