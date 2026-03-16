@@ -1,9 +1,11 @@
 projects:
   - name: claude-code-hub
-    source_dir: ../claude-code-hub
+    source_dir: /Users/gunegg/Works/vibe-me/claude-code-hub
     dockerfile_path: deploy/Dockerfile
     build_context: .
     image_name: claude-code-hub
-    harbor_project: library
+    version: 1.0.0
+    built_commit: d74e7e1
+    harbor_project: ai.infra
     platform: linux/amd64
     enabled: true

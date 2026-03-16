@@ -195,6 +195,17 @@ spec-writer → designer → coder → reviewer → test-strategist → test-exe
 
 脚本层不做任何智能判断，只接受参数并执行。所有"分析"和"决策"由 AI 层完成。
 
+## 镜像版本管理
+
+构建镜像时，AI 层负责版本决策，详见 `docs/specs/semver-versioning.md`。核心规则：
+
+1. 读取 `projects.yaml` 的 `version` 和 `built_commit`
+2. 对比源码仓库 HEAD commit 与 `built_commit`
+3. 决策：首次构建用当前版本 / 有变更则 auto bump patch / 无变更默认不构建（用户坚持则 bump 后构建）
+4. 版本只能前进，不能倒退或重复
+5. 通过 `--version` 参数传给 `build.sh`
+6. 构建成功后回写 `version` 和 `built_commit` 到 `projects.yaml`
+
 ## 目录约定
 
 ```

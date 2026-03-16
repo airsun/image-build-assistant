@@ -14,6 +14,8 @@ project_resolver_clear() {
   HARBOR_PROJECT=""
   PLATFORM=""
   ENABLED=""
+  VERSION=""
+  BUILT_COMMIT=""
 }
 
 project_resolver_parse_field() {
@@ -103,6 +105,8 @@ resolve_project_by_name() {
   HARBOR_PROJECT="$(project_resolver_parse_field "${registry_path}" "${project_name}" "harbor_project")"
   PLATFORM="$(project_resolver_parse_field "${registry_path}" "${project_name}" "platform")"
   ENABLED="$(project_resolver_parse_field "${registry_path}" "${project_name}" "enabled")"
+  VERSION="$(project_resolver_parse_field "${registry_path}" "${project_name}" "version")"
+  BUILT_COMMIT="$(project_resolver_parse_field "${registry_path}" "${project_name}" "built_commit")"
   SOURCE_DIR="$(project_resolver_normalize_source_dir "${registry_path}" "${SOURCE_DIR}")"
 }
 

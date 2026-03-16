@@ -215,7 +215,7 @@ build_image_merge_settings() {
 
   merge_project_settings
 
-  VERSION="${REQUESTED_VERSION:-${VERSION:-$(date '+%Y%m%d%H%M%S')}}"
+  VERSION="${REQUESTED_VERSION:-${VERSION}}"
   PUSH="${REQUESTED_PUSH:-${PUSH}}"
 }
 
