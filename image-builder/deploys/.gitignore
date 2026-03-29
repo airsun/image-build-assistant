@@ -1,0 +1,3 @@
+# Ignore generated YAML history, keep directory structure
+*
+!.gitignore

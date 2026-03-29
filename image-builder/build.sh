@@ -39,6 +39,8 @@ build_image_reset_state() {
   REQUESTED_VERSION=""
   REQUESTED_PLATFORM=""
   REQUESTED_PUSH=""
+  REQUESTED_ENV=""
+  BUILD_ARGS=""
 }
 
 build_image_load_remote_config() {
@@ -56,6 +58,11 @@ build_image_load_remote_config() {
   # Unset to prevent source residue from polluting merge_project_settings().
   unset IMAGE_NAME VERSION
 
+  DEPLOY_HOST="${DEPLOY_HOST:-}"
+  DEPLOY_PORT="${DEPLOY_PORT:-22}"
+  DEPLOY_USER="${DEPLOY_USER:-}"
+  DEPLOY_SSH_KEY_PATH="${DEPLOY_SSH_KEY_PATH:-}"
+  DEPLOY_BASE_DIR="${DEPLOY_BASE_DIR:-}"
   REMOTE_HOST="${REMOTE_HOST:-}"
   REMOTE_PORT="${REMOTE_PORT:-22}"
   REMOTE_USER="${REMOTE_USER:-}"
@@ -80,10 +87,6 @@ build_image_load_remote_config() {
   }
   [[ -n "${REMOTE_BASE_DIR}" ]] || {
     build_image_die "Missing required remote config: REMOTE_BASE_DIR"
-    return 1
-  }
-  [[ -n "${HARBOR_HOST}" ]] || {
-    build_image_die "Missing required remote config: HARBOR_HOST"
     return 1
   }
 }
@@ -135,6 +138,10 @@ build_image_parse_args() {
         REQUESTED_PUSH="$2"
         shift 2
         ;;
+      --env)
+        REQUESTED_ENV="$2"
+        shift 2
+        ;;
       *)
         build_image_die "Unknown argument: $1"
         return 1
@@ -165,6 +172,7 @@ build_image_apply_manual_project() {
   HARBOR_PROJECT="${REQUESTED_HARBOR_PROJECT}"
   PLATFORM="${REQUESTED_PLATFORM}"
   ENABLED="true"
+  BUILD_ARGS=""
 }
 
 build_image_normalize_dockerfile_path() {
@@ -204,7 +212,7 @@ build_image_resolve_project() {
     build_image_die "Either --project or --source-dir is required"
     return 1
   }
-  resolve_project_by_name "${PROJECTS_PATH}" "${REQUESTED_PROJECT}" || return 1
+  resolve_project_by_name "${PROJECTS_PATH}" "${REQUESTED_PROJECT}" "${REQUESTED_ENV}" || return 1
 }
 
 build_image_merge_settings() {

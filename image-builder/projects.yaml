@@ -4,8 +4,45 @@ projects:
     dockerfile_path: deploy/Dockerfile
     build_context: .
     image_name: claude-code-hub
-    version: 1.0.0
-    built_commit: d74e7e1
-    harbor_project: ai.infra
     platform: linux/amd64
     enabled: true
+    envs:
+      - env: skytech
+        version: 1.0.2
+        built_commit: ccd6555
+        harbor_project: ai.infra
+
+  - name: claude-code-hub-neo
+    source_dir: /Users/gunegg/Works/code_workspace/claude-code-hub-neo
+    dockerfile_path: deploy/Dockerfile
+    build_context: .
+    image_name: claude-code-hub-neo
+    platform: linux/amd64
+    build_args: APP_VERSION=${VERSION}
+    enabled: true
+    envs:
+      - env: skytech
+        version: 0.6.7
+        built_commit: 616d4b8e
+        harbor_project: ai.infra
+        deploy:
+          intent: k8s
+          namespace: claude-hub
+          cluster: default
+          domain: hub.ai.internal
+          container_port: 3000
+      - env: home-134
+        version: 0.1.0
+
+  - name: vl-demo
+    source_dir: /Users/gunegg/Works/vibe-empower/vl-demo
+    dockerfile_path: Dockerfile
+    build_context: .
+    image_name: zzt-form-extractor
+    platform: linux/amd64
+    enabled: true
+    envs:
+      - env: skytech
+        version: v-0.1.5
+        built_commit: 111b1b5
+        harbor_project: tax

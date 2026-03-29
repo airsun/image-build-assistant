@@ -57,6 +57,7 @@ remote_entry_init() {
   VERSION="${VERSION:-latest}"
   PLATFORM="${PLATFORM:-linux/amd64}"
   PUSH="${PUSH:-true}"
+  BUILD_ARGS="${BUILD_ARGS:-}"
 
   [[ -n "${REMOTE_BASE_DIR}" ]] || {
     remote_entry_error "REMOTE_BASE_DIR is required"
@@ -132,10 +133,37 @@ remote_entry_resolve_context_dir() {
   fi
 }
 
-remote_entry_run_build() {
-  local full_image="${HARBOR_HOST}/${HARBOR_PROJECT}/${IMAGE_NAME}"
-  local context_dir=""
+remote_entry_expand_build_args() {
+  local raw_args="${BUILD_ARGS:-}"
+  local expanded=""
+  local pair=""
 
+  [[ -n "${raw_args}" ]] || return 0
+
+  expanded="${raw_args//\$\{VERSION\}/${VERSION}}"
+
+  while IFS= read -r -d ',' pair || [[ -n "${pair}" ]]; do
+    pair="${pair#"${pair%%[![:space:]]*}"}"
+    pair="${pair%"${pair##*[![:space:]]}"}"
+    [[ -n "${pair}" ]] || continue
+    printf '%s\n' "--build-arg" "${pair}"
+  done <<< "${expanded}"
+}
+
+remote_entry_resolve_image_tag() {
+  if [[ -n "${HARBOR_HOST}" ]]; then
+    printf '%s/%s/%s' "${HARBOR_HOST}" "${HARBOR_PROJECT}" "${IMAGE_NAME}"
+  else
+    printf '%s' "${IMAGE_NAME}"
+  fi
+}
+
+remote_entry_run_build() {
+  local full_image=""
+  local context_dir=""
+  local build_arg_flags=()
+
+  full_image="$(remote_entry_resolve_image_tag)"
   context_dir="$(remote_entry_resolve_context_dir)"
 
   [[ -d "${context_dir}" ]] || {
@@ -143,15 +171,24 @@ remote_entry_run_build() {
     return 1
   }
 
+  while IFS= read -r line; do
+    [[ -n "${line}" ]] && build_arg_flags+=("${line}")
+  done < <(remote_entry_expand_build_args)
+
+  if (( ${#build_arg_flags[@]} > 0 )); then
+    remote_entry_log "Build args: ${build_arg_flags[*]}"
+  fi
+
   remote_entry_log "Building image ${full_image}:${VERSION}"
   docker build \
     --platform "${PLATFORM}" \
     -f "${REMOTE_ENTRY_STAGED_DOCKERFILE}" \
+    "${build_arg_flags[@]+"${build_arg_flags[@]}"}" \
     -t "${full_image}:${VERSION}" \
     -t "${full_image}:latest" \
     "${context_dir}"
 
-  if [[ "${PUSH}" == "true" ]]; then
+  if [[ "${PUSH}" == "true" && -n "${HARBOR_HOST}" ]]; then
     remote_entry_log "Pushing image ${full_image}:${VERSION}"
     docker push "${full_image}:${VERSION}"
     docker push "${full_image}:latest"

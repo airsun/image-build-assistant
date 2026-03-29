@@ -68,7 +68,7 @@ remote_exec_upload_and_execute() {
     "$(remote_exec_ssh_target):${remote_entry_path}"
 
   printf -v remote_command \
-    'env REMOTE_BASE_DIR=%q RUN_ID=%q UPLOADED_ARCHIVE_PATH=%q UPLOADED_DOCKERFILE_PATH=%q DOCKERFILE_PATH=%q BUILD_CONTEXT=%q HARBOR_HOST=%q HARBOR_PROJECT=%q IMAGE_NAME=%q VERSION=%q PLATFORM=%q PUSH=%q bash %q' \
+    'env REMOTE_BASE_DIR=%q RUN_ID=%q UPLOADED_ARCHIVE_PATH=%q UPLOADED_DOCKERFILE_PATH=%q DOCKERFILE_PATH=%q BUILD_CONTEXT=%q HARBOR_HOST=%q HARBOR_PROJECT=%q IMAGE_NAME=%q VERSION=%q PLATFORM=%q PUSH=%q BUILD_ARGS=%q bash %q' \
     "${REMOTE_BASE_DIR}" \
     "${run_id}" \
     "${remote_archive_path}" \
@@ -81,6 +81,7 @@ remote_exec_upload_and_execute() {
     "${VERSION}" \
     "${PLATFORM}" \
     "${PUSH}" \
+    "${BUILD_ARGS:-}" \
     "${remote_entry_path}"
 
   ssh $(remote_exec_ssh_options) "$(remote_exec_ssh_target)" "${remote_command}"

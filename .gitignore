@@ -1,5 +1,6 @@
 # 镜像构建助手本地配置（勿提交）
 image-builder/remote.env
+image-builder/remote-envs/*.env
 
 # 构建日志（本地留存，不纳入版本控制）
 image-builder/logs/

@@ -195,6 +195,68 @@ spec-writer → designer → coder → reviewer → test-strategist → test-exe
 
 脚本层不做任何智能判断，只接受参数并执行。所有"分析"和"决策"由 AI 层完成。
 
+## 多环境路由
+
+助手在多个局域网环境工作，每个环境有独立的构建服务器、Harbor 仓库和部署目标。
+
+### 配置组织
+
+```
+image-builder/
+  remote-envs/
+    skytech.env           ← 局域网 A 的全套配置
+    other-lan.env         ← 局域网 B 的全套配置
+```
+
+每份 env 文件格式与 `remote.env.example` 模板一致，包含 build host + Harbor + deploy host 全套连接配置。
+
+### projects.yaml 结构
+
+项目字段分两层：共享字段在项目层，per-env 字段嵌套在 `envs` 内。同一个项目可在多个环境中构建，以 `name + env` 为联合唯一键：
+
+```yaml
+- name: claude-code-hub-neo
+  source_dir: ...                 # 项目层（共享）
+  dockerfile_path: deploy/Dockerfile
+  build_context: .
+  image_name: claude-code-hub-neo
+  platform: linux/amd64
+  envs:
+    - env: skytech                # env 层（独立）
+      version: 0.6.7
+      harbor_project: ai.infra
+      deploy:
+        intent: k8s
+    - env: home-134
+      version: 0.1.0
+```
+
+| 层级 | 字段 |
+|------|------|
+| 项目层 | name, source_dir, dockerfile_path, build_context, image_name, platform, build_args, enabled |
+| env 层 | env, version, built_commit, harbor_project |
+| deploy 层（env 内） | intent, namespace, cluster, domain, container_port, deployed_version, deployed_commit |
+
+### 路由规则
+
+AI 层构建/部署流程：
+
+1. 确定目标项目和环境
+2. 解析 env 文件路径：`image-builder/remote-envs/{env}.env`
+3. 将 `--config`（env 文件路径）和 `--env`（resolver 匹配键）一并传给 `build.sh` / `deploy.sh`
+
+```bash
+bash build.sh --config image-builder/remote-envs/skytech.env --project hub-neo --env skytech --version v-0.6.8
+```
+
+### 约束
+
+- 每个项目必须有 `envs` 段，至少包含一个 env 条目
+- 同名项目可存在于多个环境，各自维护独立的版本状态和部署配置
+- env 文件不存在时终止操作并提示可用的 env 文件列表
+- 部署与构建使用同一份 env 文件（同环境内聚）
+- Harbor 为可选：无 HARBOR_HOST 的环境不 push，镜像 tag 为纯 `IMAGE_NAME:VERSION`
+
 ## 镜像版本管理
 
 构建镜像时，AI 层负责版本决策，详见 `docs/specs/semver-versioning.md`。核心规则：
@@ -203,17 +265,41 @@ spec-writer → designer → coder → reviewer → test-strategist → test-exe
 2. 对比源码仓库 HEAD commit 与 `built_commit`
 3. 决策：首次构建用当前版本 / 有变更则 auto bump patch / 无变更默认不构建（用户坚持则 bump 后构建）
 4. 版本只能前进，不能倒退或重复
-5. 通过 `--version` 参数传给 `build.sh`
-6. 构建成功后回写 `version` 和 `built_commit` 到 `projects.yaml`
+5. 解析项目 `env` 字段确定 config 路径（见"多环境路由"）
+6. 通过 `--config` 和 `--version` 参数传给 `build.sh`
+7. 构建成功后回写 `version` 和 `built_commit` 到 `projects.yaml`
+
+## K8s 部署流程
+
+构建推送完成后，对于 `deploy.intent: k8s` 的项目，AI 层执行部署 YAML 生成流程。详见 `docs/specs/k8s-deploy-intent.md`。
+
+### 部署流程步骤
+
+1. 检测 `projects.yaml` 中项目的 `deploy.intent` 字段
+2. 读取 `image-builder/deploy-conventions.md`（全局规约）
+3. 读取 `image-builder/projects/{name}.md`（项目 deploy note）
+4. 读取构建产物信息（镜像地址 + 版本）
+5. 综合以上输入生成 k8s YAML 清单，输出到 `image-builder/deploys/{project}/{version}/`
+6. 调用 `deploy.sh` 推送到远端 deploy host
+7. 推送成功后回写 `deployed_version` 和 `deployed_commit` 到 `projects.yaml`
+
+### 规约优先原则
+
+AI 生成 YAML 时以 `deploy-conventions.md` 为默认值基础，项目 deploy note 中描述的内容覆盖对应默认值。未在 deploy note 中提及的方面按规约处理。
 
 ## 目录约定
 
 ```
 image-builder/             用户使用的工具目录
   build.sh                 统一构建入口
+  deploy.sh                部署推送入口
   projects.yaml            项目注册表
   remote.env.example       远端配置模板
+  remote-envs/             按环境分文件的远端配置（不纳入版本控制）
+  deploy-conventions.md    k8s 部署全局规约
+  projects/                项目 deploy note（按项目名命名）
   scripts/                 公共函数库 + 远端入口脚本
+  deploys/                 AI 生成的 k8s YAML（按项目/版本分目录，不纳入版本控制）
   logs/                    构建日志（按项目分目录，不纳入版本控制）
 agents/              各 agent 角色定义（独立可替换）
 docs/
