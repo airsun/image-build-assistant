@@ -34,6 +34,35 @@ projects:
       - env: home-134
         version: 0.1.0
 
+  - name: dan-flow-hub
+    source_dir: /Users/gunegg/Works/vibe-me/dan-flow-cursor
+    dockerfile_path: Dockerfile
+    build_context: .
+    image_name: dan-flow-hub
+    platform: linux/amd64
+    enabled: true
+    envs:
+      - env: skytech
+        version: 0.1.1
+        built_commit: 86f23c1
+        harbor_project: ai.infra
+        deploy:
+          intent: k8s
+          namespace: techlab
+          cluster: k8s
+          domain: hub.tech.skytech.io
+          path_prefix: /works
+          container_port: 8000
+      - env: office-31
+        version: 0.1.2
+        built_commit: 02ba23f
+        harbor_project: ai.infra
+        deploy:
+          intent: docker
+      - env: home-134
+        version: 0.1.0
+        built_commit: e1f5aab
+
   - name: vl-demo
     source_dir: /Users/gunegg/Works/vibe-empower/vl-demo
     dockerfile_path: Dockerfile
@@ -43,6 +72,34 @@ projects:
     enabled: true
     envs:
       - env: skytech
-        version: v-0.1.5
-        built_commit: 111b1b5
+        version: v-0.1.12
+        built_commit: 91de659
         harbor_project: tax
+
+  - name: vibe-hedgedoc-backend
+    group: hedgedoc
+    source_dir: /Users/gunegg/Works/vibe-tech/vibe-hedgedoc/vibe-hedgedoc
+    dockerfile_path: backend/docker/Dockerfile
+    build_context: .
+    image_name: vibe-hedgedoc-backend
+    platform: linux/amd64
+    enabled: true
+    envs:
+      - env: skytech
+        version: 0.1.0
+        built_commit: d99c311f
+        harbor_project: ai.infra
+
+  - name: vibe-hedgedoc-frontend
+    group: hedgedoc
+    source_dir: /Users/gunegg/Works/vibe-tech/vibe-hedgedoc/vibe-hedgedoc
+    dockerfile_path: frontend/docker/Dockerfile
+    build_context: .
+    image_name: vibe-hedgedoc-frontend
+    platform: linux/amd64
+    enabled: true
+    envs:
+      - env: skytech
+        version: 0.1.0
+        built_commit: d99c311f
+        harbor_project: ai.infra
