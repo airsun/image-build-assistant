@@ -72,8 +72,8 @@ projects:
     enabled: true
     envs:
       - env: skytech
-        version: v-0.1.13
-        built_commit: efcd7dd
+        version: v-0.1.14
+        built_commit: a54bfdb
         harbor_project: tax
 
   - name: vibe-hedgedoc-backend
