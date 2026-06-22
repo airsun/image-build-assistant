@@ -34,17 +34,23 @@ projects:
     dockerfile_path: deploy/Dockerfile
     build_context: .
     image_name: claude-code-hub
-    harbor_project: library
     platform: linux/amd64
     enabled: true
+    envs:
+      - env: default
+        harbor_project: library
+        version: 1.0.0
   - name: worker-service
     source_dir: /tmp/worker-service
     dockerfile_path: build/Dockerfile
     build_context: app
     image_name: worker-service
-    harbor_project: services
     platform: linux/arm64
     enabled: false
+    envs:
+      - env: default
+        harbor_project: services
+        version: 0.1.0
 EOF
 
 test_resolve_project_by_name() {
@@ -99,6 +105,9 @@ projects:
     source_dir: ./projects/claude-code-hub
     dockerfile_path: deploy/Dockerfile
     build_context: .
+    envs:
+      - env: default
+        version: 1.0.0
 EOF
 
   project_resolver_clear
@@ -121,12 +130,59 @@ test_validate_project_settings_rejects_missing_required_fields() {
   grep -q "Missing required project setting: SOURCE_DIR" "${TEST_TMPDIR}/validate.out" || fail "validation should name missing required field"
 }
 
+test_list_project_names_by_group() {
+  local gfile="${TEST_TMPDIR}/group-projects.yaml"
+
+  cat >"${gfile}" <<'EOF'
+projects:
+  - name: alpha
+    group: demo
+    source_dir: /tmp/a
+    dockerfile_path: Dockerfile
+    build_context: .
+    enabled: true
+    envs:
+      - env: skytech
+        version: 1.0.0
+  - name: beta
+    group: demo
+    source_dir: /tmp/b
+    dockerfile_path: Dockerfile
+    build_context: .
+    enabled: false
+    envs:
+      - env: skytech
+        version: 1.0.0
+  - name: gamma
+    group: other
+    source_dir: /tmp/c
+    dockerfile_path: Dockerfile
+    build_context: .
+    envs:
+      - env: skytech
+        version: 1.0.0
+  - name: delta
+    group: demo
+    source_dir: /tmp/d
+    dockerfile_path: Dockerfile
+    build_context: .
+    envs:
+      - env: office-31
+        version: 1.0.0
+EOF
+
+  local out=""
+  out="$(list_project_names_by_group "${gfile}" "demo" "skytech")"
+  assert_eq "${out}" "alpha" "group list should include enabled member with matching env only"
+}
+
 run_all_tests() {
   test_resolve_project_by_name
   test_missing_project_fails
   test_merge_project_settings_prefers_overrides
   test_resolve_relative_source_dir_against_registry_file
   test_validate_project_settings_rejects_missing_required_fields
+  test_list_project_names_by_group
   printf 'PASS: project resolver tests\n'
 }
 

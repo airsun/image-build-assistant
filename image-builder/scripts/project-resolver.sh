@@ -330,3 +330,106 @@ validate_project_settings() {
     fi
   done
 }
+
+# Print one project name per line: group match, has env entry, enabled (default true).
+# Order follows registry file (YAML list order).
+list_project_names_by_group() {
+  local registry_path="$1"
+  local group_name="$2"
+  local env_name="$3"
+
+  [[ -f "${registry_path}" ]] || {
+    project_resolver_error "Registry file not found: ${registry_path}"
+    return 1
+  }
+
+  awk -v group_name="${group_name}" -v env_name="${env_name}" '
+    function trim(value) {
+      sub(/^[[:space:]]+/, "", value)
+      sub(/[[:space:]]+$/, "", value)
+      return value
+    }
+
+    function flush() {
+      if (current_name == "") {
+        return
+      }
+      if (current_group != group_name) {
+        return
+      }
+      if (!has_target_env) {
+        return
+      }
+      en = current_enabled
+      if (en == "") {
+        en = "true"
+      }
+      if (en != "true" && en != "yes" && en != "1") {
+        return
+      }
+      print current_name
+    }
+
+    BEGIN {
+      in_projects = 0
+      current_name = ""
+      current_group = ""
+      current_enabled = ""
+      has_target_env = 0
+      in_envs = 0
+    }
+
+    /^projects:[[:space:]]*$/ {
+      in_projects = 1
+      next
+    }
+
+    !in_projects {
+      next
+    }
+
+    /^  - name:[[:space:]]*/ {
+      flush()
+      current = $0
+      sub(/^  - name:[[:space:]]*/, "", current)
+      current_name = trim(current)
+      current_group = ""
+      current_enabled = ""
+      has_target_env = 0
+      in_envs = 0
+      next
+    }
+
+    current_name != "" && /^    envs:[[:space:]]*$/ {
+      in_envs = 1
+      next
+    }
+
+    current_name != "" && in_envs && /^      -[[:space:]]*env:[[:space:]]*/ {
+      current = $0
+      sub(/^      -[[:space:]]*env:[[:space:]]*/, "", current)
+      if (trim(current) == env_name) {
+        has_target_env = 1
+      }
+      next
+    }
+
+    current_name != "" && !in_envs && /^    group:[[:space:]]*/ {
+      current = $0
+      sub(/^    group:[[:space:]]*/, "", current)
+      current_group = trim(current)
+      next
+    }
+
+    current_name != "" && !in_envs && /^    enabled:[[:space:]]*/ {
+      current = $0
+      sub(/^    enabled:[[:space:]]*/, "", current)
+      current_enabled = trim(current)
+      next
+    }
+
+    END {
+      flush()
+    }
+  ' "${registry_path}"
+}

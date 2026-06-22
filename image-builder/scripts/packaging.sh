@@ -6,7 +6,15 @@ packaging_error() {
 }
 
 default_excludes() {
-  printf '%s\n' ".git" "node_modules" ".next" "coverage" "dist" ".DS_Store"
+  local entry
+  for entry in ".git" "node_modules" ".next" "coverage" "dist" ".DS_Store"; do
+    # INCLUDE_GIT=true keeps .git in the build context for projects that
+    # embed version metadata from git history at build time (e.g. git describe).
+    if [[ "${entry}" == ".git" && "${INCLUDE_GIT:-}" == "true" ]]; then
+      continue
+    fi
+    printf '%s\n' "${entry}"
+  done
 }
 
 resolve_build_context_path() {

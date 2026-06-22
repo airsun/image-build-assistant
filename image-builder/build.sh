@@ -40,6 +40,7 @@ build_image_reset_state() {
   REQUESTED_PLATFORM=""
   REQUESTED_PUSH=""
   REQUESTED_ENV=""
+  REQUESTED_GROUP=""
   BUILD_ARGS=""
 }
 
@@ -142,6 +143,10 @@ build_image_parse_args() {
         REQUESTED_ENV="$2"
         shift 2
         ;;
+      --group)
+        REQUESTED_GROUP="$2"
+        shift 2
+        ;;
       *)
         build_image_die "Unknown argument: $1"
         return 1
@@ -209,7 +214,7 @@ build_image_resolve_project() {
   fi
 
   [[ -n "${REQUESTED_PROJECT}" ]] || {
-    build_image_die "Either --project or --source-dir is required"
+    build_image_die "Either --project, --group, or --source-dir is required"
     return 1
   }
   resolve_project_by_name "${PROJECTS_PATH}" "${REQUESTED_PROJECT}" "${REQUESTED_ENV}" || return 1
@@ -261,25 +266,18 @@ build_image_setup_logging() {
   build_image_log "Log file: ${BUILD_IMAGE_LOG_FILE}"
 }
 
-build_image_main() {
+# Run inside a subshell when using group builds so exec in setup_logging does not stack.
+build_image_execute_build() {
   local archive_path=""
   local dockerfile_abspath=""
   local run_id=""
-
-  build_image_reset_state
-  build_image_parse_args "$@" || return 1
-  build_image_load_remote_config "${CONFIG_PATH}" || return 1
-  build_image_resolve_project || return 1
-  build_image_validate_enabled_state || return 1
-  build_image_merge_settings
-  build_image_validate_inputs || return 1
-
-  build_image_setup_logging
 
   dockerfile_abspath="${SOURCE_DIR}/${DOCKERFILE_PATH}"
   run_id="$(build_image_make_run_id)"
   archive_path="$(mktemp "/tmp/image-build-context-${run_id}.XXXXXX.tar.gz")"
   trap "rm -f $(printf '%q' "${archive_path}")" RETURN
+
+  build_image_setup_logging
 
   build_image_log "Packaging ${PROJECT_NAME} from ${SOURCE_DIR}"
   create_build_context_archive "${SOURCE_DIR}" "${BUILD_CONTEXT}" "${archive_path}" >/dev/null
@@ -288,6 +286,62 @@ build_image_main() {
   remote_exec_upload_and_execute "${archive_path}" "${dockerfile_abspath}" "${run_id}"
 
   build_image_log "Remote build complete for ${IMAGE_NAME}:${VERSION}"
+}
+
+build_image_validate_group_args() {
+  [[ -n "${REQUESTED_ENV}" ]] || {
+    build_image_die "--env is required with --group"
+    return 1
+  }
+  [[ -z "${REQUESTED_PROJECT}" ]] || {
+    build_image_die "Cannot combine --group with --project"
+    return 1
+  }
+  [[ -z "${REQUESTED_SOURCE_DIR}" ]] || {
+    build_image_die "Cannot combine --group with --source-dir"
+    return 1
+  }
+}
+
+build_image_main() {
+  local group_member=""
+  local group_members=()
+
+  build_image_reset_state
+  build_image_parse_args "$@" || return 1
+  build_image_load_remote_config "${CONFIG_PATH}" || return 1
+
+  if [[ -n "${REQUESTED_GROUP}" ]]; then
+    build_image_validate_group_args || return 1
+    while IFS= read -r group_member || [[ -n "${group_member}" ]]; do
+      [[ -n "${group_member}" ]] && group_members+=("${group_member}")
+    done < <(list_project_names_by_group "${PROJECTS_PATH}" "${REQUESTED_GROUP}" "${REQUESTED_ENV}")
+
+    ((${#group_members[@]} > 0)) || {
+      build_image_die "No enabled projects in group '${REQUESTED_GROUP}' with env '${REQUESTED_ENV}'"
+      return 1
+    }
+
+    build_image_log "Group '${REQUESTED_GROUP}' (${REQUESTED_ENV}): ${#group_members[@]} project(s)"
+
+    for REQUESTED_PROJECT in "${group_members[@]}"; do
+      build_image_log ">> Group member: ${REQUESTED_PROJECT}"
+      build_image_resolve_project || return 1
+      build_image_validate_enabled_state || return 1
+      build_image_merge_settings
+      build_image_validate_inputs || return 1
+      (build_image_execute_build) || return 1
+    done
+    build_image_log "Group '${REQUESTED_GROUP}' complete"
+    return 0
+  fi
+
+  build_image_resolve_project || return 1
+  build_image_validate_enabled_state || return 1
+  build_image_merge_settings
+  build_image_validate_inputs || return 1
+
+  build_image_execute_build || return 1
 }
 
 if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then

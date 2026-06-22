@@ -15,14 +15,18 @@ remote_exec_ssh_options() {
   printf '%s\n' \
     "-i" "${SSH_KEY_PATH}" \
     "-p" "${REMOTE_PORT}" \
-    "-o" "BatchMode=yes"
+    "-o" "BatchMode=yes" \
+    "-o" "ServerAliveInterval=30" \
+    "-o" "ServerAliveCountMax=120"
 }
 
 remote_exec_scp_options() {
   printf '%s\n' \
     "-i" "${SSH_KEY_PATH}" \
     "-P" "${REMOTE_PORT}" \
-    "-o" "BatchMode=yes"
+    "-o" "BatchMode=yes" \
+    "-o" "ServerAliveInterval=30" \
+    "-o" "ServerAliveCountMax=120"
 }
 
 remote_exec_shell_quote() {

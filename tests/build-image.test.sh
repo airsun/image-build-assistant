@@ -76,7 +76,7 @@ test_build_image_requires_project_or_path() {
     fail "build_image_main should fail without project or source dir"
   fi
 
-  grep -q "Either --project or --source-dir is required" "${TEST_TMPDIR}/missing-project.out" || fail "missing selector failure should explain required input"
+  grep -q "Either --project, --group, or --source-dir is required" "${TEST_TMPDIR}/missing-project.out" || fail "missing selector failure should explain required input"
 }
 
 test_build_image_uses_project_registry() {
@@ -219,6 +219,80 @@ test_build_image_make_run_id_is_not_second_only() {
   unset BUILD_IMAGE_NOW BUILD_IMAGE_PID BUILD_IMAGE_NONCE
 }
 
+test_build_image_group_requires_env() {
+  if build_image_main --config "${remote_env}" --projects "${projects_file}" --group "demo" >"${TEST_TMPDIR}/group-no-env.out" 2>&1; then
+    fail "group build should require --env"
+  fi
+
+  grep -qF -- "--env is required with --group" "${TEST_TMPDIR}/group-no-env.out" || fail "group without env should explain --env requirement"
+}
+
+test_build_image_group_invokes_each_member() {
+  local group_yaml="${TEST_TMPDIR}/group-projects.yaml"
+  local src_a="${TEST_TMPDIR}/svc-a"
+  local src_b="${TEST_TMPDIR}/svc-b"
+  local call_log="${TEST_TMPDIR}/group-build.log"
+
+  mkdir -p "${src_a}/deploy" "${src_b}/deploy"
+  : >"${src_a}/deploy/Dockerfile"
+  : >"${src_b}/deploy/Dockerfile"
+
+  cat >"${group_yaml}" <<EOF
+projects:
+  - name: svc-a
+    group: demo
+    source_dir: ${src_a}
+    dockerfile_path: deploy/Dockerfile
+    build_context: .
+    image_name: svc-a
+    platform: linux/amd64
+    enabled: true
+    envs:
+      - env: skytech
+        version: 1.0.0
+        harbor_project: library
+  - name: svc-b
+    group: demo
+    source_dir: ${src_b}
+    dockerfile_path: deploy/Dockerfile
+    build_context: .
+    image_name: svc-b
+    platform: linux/amd64
+    enabled: true
+    envs:
+      - env: skytech
+        version: 2.0.0
+        harbor_project: library
+EOF
+
+  build_image_reset_state
+  BUILD_IMAGE_RUN_ID="group-test-run"
+
+  create_build_context_archive() {
+    printf '%s\n' "archive ${1} ${2} ${3}" >> "${call_log}"
+    : > "${3}"
+    printf '%s\n' "${3}"
+  }
+
+  remote_exec_upload_and_execute() {
+    printf '%s\n' "remote ${1} ${2} ${3} ${IMAGE_NAME} ${VERSION} ${PLATFORM}" >> "${call_log}"
+  }
+
+  build_image_main \
+    --config "${remote_env}" \
+    --projects "${group_yaml}" \
+    --group demo \
+    --env skytech
+
+  unset -f create_build_context_archive remote_exec_upload_and_execute
+  reload_build_image_script
+
+  assert_eq "$(grep -c '^archive ' "${call_log}" || true)" "2" "group build should package each member once"
+  assert_eq "$(grep -c '^remote ' "${call_log}" || true)" "2" "group build should remote-build each member once"
+  assert_contains "$(cat "${call_log}")" "svc-a 1.0.0" "first member should use its env version"
+  assert_contains "$(cat "${call_log}")" "svc-b 2.0.0" "second member should use its env version"
+}
+
 run_all_tests() {
   test_build_image_requires_project_or_path
   test_build_image_uses_project_registry
@@ -226,6 +300,8 @@ run_all_tests() {
   test_build_image_rejects_dockerfile_path_escape
   test_build_image_rejects_disabled_project
   test_build_image_make_run_id_is_not_second_only
+  test_build_image_group_requires_env
+  test_build_image_group_invokes_each_member
   printf 'PASS: build-image tests\n'
 }
 

@@ -124,6 +124,28 @@ test_create_build_context_archive_uses_subdir_context_contract() {
   assert_contains "$(cat "${tar_log}")" "app" "subdir context should archive only requested subdir"
 }
 
+test_create_build_context_archive_includes_git_when_opted_in() {
+  local source_dir="${TEST_TMPDIR}/archive-include-git-project"
+  local archive_path="${TEST_TMPDIR}/include-git-context.tar.gz"
+  local tar_log="${TEST_TMPDIR}/include-git-tar.log"
+
+  create_case_project "${source_dir}"
+
+  tar() {
+    printf '%s\n' "$*" > "${tar_log}"
+  }
+
+  INCLUDE_GIT=true create_build_context_archive "${source_dir}" "." "${archive_path}" >/dev/null
+  unset -f tar
+
+  local tar_args
+  tar_args="$(cat "${tar_log}")"
+  if [[ "${tar_args}" == *"--exclude=./.git"* ]]; then
+    fail "INCLUDE_GIT=true should keep .git in the build context"
+  fi
+  assert_contains "${tar_args}" "--exclude=./node_modules" "INCLUDE_GIT toggle should not affect other excludes"
+}
+
 run_all_tests() {
   test_resolve_build_context_root
   test_resolve_build_context_subdir
@@ -131,6 +153,7 @@ run_all_tests() {
   test_resolve_build_context_rejects_path_escape
   test_create_build_context_archive_uses_root_context_contract
   test_create_build_context_archive_uses_subdir_context_contract
+  test_create_build_context_archive_includes_git_when_opted_in
   printf 'PASS: packaging tests\n'
 }
 

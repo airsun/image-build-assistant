@@ -63,10 +63,10 @@ remote_entry_init() {
     remote_entry_error "REMOTE_BASE_DIR is required"
     return 1
   }
-  [[ -n "${HARBOR_HOST}" ]] || {
-    remote_entry_error "HARBOR_HOST is required"
+  if [[ "${PUSH}" == "true" && -z "${HARBOR_HOST}" ]]; then
+    remote_entry_error "HARBOR_HOST is required when PUSH=true"
     return 1
-  }
+  fi
   [[ -n "${RUN_ID}" ]] || {
     remote_entry_error "RUN_ID is required"
     return 1

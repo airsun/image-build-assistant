@@ -72,8 +72,8 @@ projects:
     enabled: true
     envs:
       - env: skytech
-        version: v-0.1.14
-        built_commit: a54bfdb
+        version: v-0.1.22
+        built_commit: 02d109b
         harbor_project: tax
 
   - name: vibe-hedgedoc-backend
@@ -89,6 +89,20 @@ projects:
         version: 0.1.0
         built_commit: d99c311f
         harbor_project: ai.infra
+
+  - name: warpgate
+    source_dir: /Users/gunegg/Works/code_workspace/warpgate
+    dockerfile_path: docker/Dockerfile
+    build_context: .
+    image_name: warpgate
+    platform: linux/amd64
+    enabled: true
+    # NOTE: INCLUDE_GIT=true (git describe version); --push false (local build only)
+    # Dockerfile uses USTC sparse crates.io mirror for builder network
+    envs:
+      - env: office-31
+        version: 0.25.1
+        built_commit: fce93113
 
   - name: vibe-hedgedoc-frontend
     group: hedgedoc
