@@ -273,6 +273,19 @@ bash build.sh --config image-builder/remote-envs/skytech.env --project hub-neo -
 
 构建推送完成后，对于 `deploy.intent: k8s` 的项目，AI 层执行部署 YAML 生成流程。详见 `docs/specs/k8s-deploy-intent.md`。
 
+### 集群事实采集（脚本 + Skill，降低澄清成本）
+
+在**创建或澄清** `deploy` 段、`projects/{name}.md` deploy note 时，若目标集群已可从当前执行环境（本机、CI、或 SSH 后的跳板/部署机）使用 **`kubectl`**，主 agent **应优先**运行只读盘点脚本，用 JSON 事实支撑对话与登记，**避免**让用户从控制台人工搬运 Ingress / context / 命名空间等信息：
+
+```bash
+bash image-builder/scripts/k8s-readonly-inventory.sh
+# 仅某 namespace 的 Ingress：bash image-builder/scripts/k8s-readonly-inventory.sh -n techlab
+```
+
+- **Cursor**：涉及域名、Ingress、namespace、`deploy.cluster` 与 context 对齐、或用户用自然语言要「集群现状」时，读取 Skill `.cursor/skills/k8s-cluster-snapshot/SKILL.md` 并按其中步骤执行。
+- **Claude Code / 其它环境**：无 Skill 加载时，仍按本节在部署前执行同一脚本；`KUBECONFIG` 由用户环境提供。
+- **无法执行 kubectl**：明确说明缺口；请用户在可连集群的机器上运行脚本后提供输出摘要，或配置只读凭据后再继续。
+
 ### 部署流程步骤
 
 1. 检测 `projects.yaml` 中项目的 `deploy.intent` 字段
@@ -298,7 +311,7 @@ image-builder/             用户使用的工具目录
   remote-envs/             按环境分文件的远端配置（不纳入版本控制）
   deploy-conventions.md    k8s 部署全局规约
   projects/                项目 deploy note（按项目名命名）
-  scripts/                 公共函数库 + 远端入口脚本
+  scripts/                 公共函数库 + 远端入口脚本（含 k8s 只读盘点，见上节）
   deploys/                 AI 生成的 k8s YAML（按项目/版本分目录，不纳入版本控制）
   logs/                    构建日志（按项目分目录，不纳入版本控制）
 agents/              各 agent 角色定义（独立可替换）
