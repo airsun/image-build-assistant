@@ -1,0 +1,34 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: vibe-hedgedoc
+  namespace: techlab
+  labels:
+    app.kubernetes.io/part-of: hedgedoc
+  annotations:
+    # 按集群 Ingress Controller 实际修改（nginx / traefik / alb 等）
+    # kubernetes.io/ingress.class: "nginx"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: hedgedoc.example.tech
+      http:
+        paths:
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: vibe-hedgedoc-backend
+                port:
+                  number: 3000
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: vibe-hedgedoc-frontend
+                port:
+                  number: 3001
+  # tls:
+  #   - hosts:
+  #       - hedgedoc.example.tech
+  #     secretName: hedgedoc-tls

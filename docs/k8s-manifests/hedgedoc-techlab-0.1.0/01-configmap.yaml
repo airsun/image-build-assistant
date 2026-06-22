@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vibe-hedgedoc-config
+  namespace: techlab
+  labels:
+    app.kubernetes.io/part-of: hedgedoc
+data:
+  # 必须与浏览器访问 URL 一致（含 https、无尾斜杠按官方要求）
+  HD_BASE_URL: "https://hedgedoc.example.tech"
+  HD_RENDERER_BASE_URL: "https://hedgedoc.example.tech"
+  HD_DATABASE_TYPE: "postgres"
+  HD_DATABASE_HOST: "CHANGE_ME_POSTGRES_HOST"
+  HD_DATABASE_PORT: "5432"
+  HD_DATABASE_NAME: "hedgedoc"
+  HD_DATABASE_USERNAME: "hedgedoc"
+  HD_MEDIA_BACKEND_TYPE: "filesystem"
+  HD_MEDIA_BACKEND_FILESYSTEM_UPLOAD_PATH: "uploads/"

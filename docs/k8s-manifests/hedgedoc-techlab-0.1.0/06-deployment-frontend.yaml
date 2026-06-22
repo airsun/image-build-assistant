@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vibe-hedgedoc-frontend
+  namespace: techlab
+  labels:
+    app.kubernetes.io/name: vibe-hedgedoc-frontend
+    app.kubernetes.io/part-of: hedgedoc
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: vibe-hedgedoc-frontend
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: vibe-hedgedoc-frontend
+        app.kubernetes.io/part-of: hedgedoc
+    spec:
+      containers:
+        - name: frontend
+          image: harbor.tech.skytech.io/ai.infra/vibe-hedgedoc-frontend:0.1.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 3001
+          envFrom:
+            - configMapRef:
+                name: vibe-hedgedoc-config
+          # 若前后端分域名或需显式 API 基址，可在此 env 增补（按官方文档）
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
