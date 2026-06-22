@@ -1,0 +1,100 @@
+---
+description: Cursor 环境的 task 执行策略——标签路由、工具选择、质量门禁
+globs:
+alwaysApply: true
+---
+
+# 执行策略
+
+当你在 `/opsx-apply` 流程中实现 task 时，按以下规则选择执行方式。
+
+## 环境检测（首次执行时）
+
+检测可用工具，仅报告缺失项：
+
+```bash
+command -v openspec &>/dev/null || echo "openspec: MISSING"
+command -v codex &>/dev/null || echo "codex: MISSING — backend tasks will be implemented directly"
+test -f .cursor/hooks.json && grep -q "ralph-stop" .cursor/hooks.json || echo "ralph-hook: MISSING — Ralph-loop unavailable, will use direct coding"
+```
+
+缺失工具不阻塞——降级为 agent 直接实现。
+
+## K8s 部署澄清与盘点
+
+当 task 或对话涉及为 `projects.yaml` 填写/核对 **`deploy`**（`namespace`、`domain`、`cluster`、Ingress 相关事实）或编写 **`image-builder/projects/*.md`** 中的集群侧描述时：
+
+1. **优先**读取项目 Skill **k8s-cluster-snapshot**（`.cursor/skills/k8s-cluster-snapshot/SKILL.md`），在具备 `kubectl` 与凭据的环境中执行 `bash image-builder/scripts/k8s-readonly-inventory.sh`（必要时 `-n <namespace>`），用 JSON 产出支撑澄清，**避免**要求用户手工从控制台查询。
+2. 若当前环境**无法**运行 `kubectl`：说明原因，降级为用户在跳板机运行脚本后贴回摘要，或跳过盘点并标注风险。
+
+自然语言如「集群现状」「ingress 列表」「techlab 里有什么入口」视同触发上述流程。
+
+## 标签路由
+
+tasks.md 中的内联标签决定执行方式：
+
+| Tag | 值 |
+|-----|---|
+| 类型 | `[frontend]` `[backend]` `[fullstack]` |
+| 复杂度 | `[simple]` `[medium]` `[complex]` |
+| 设计稿 | `[design:path/to/mockup.png]` |
+| 依赖 | `[depends:task description]` |
+
+### `[backend]` → Codex exec
+
+- 读取 `reference/codex-prompts.md` 后端任务模板
+- 填入 task 描述、spec 摘要、design 摘要
+- `codex exec -m gpt-5 --full-auto --sandbox workspace-write "<prompt>"`
+- `[simple]` 任务：建议快速模型（用户确认后切换）
+- Codex 不可用 → agent 直接实现
+
+### `[frontend]` simple/medium → Agent 直接编码
+
+- 参考 `reference/gemini-patterns.md` 中适用的模式
+- 有 `[design:path]` → 使用 Design-to-Code 模式（提示用户附图）
+- 编码完成后 → Browser MCP 可用时执行 Screenshot-Verify
+
+### `[frontend]` complex 或有 `[design:]` → 建议 Ralph-loop
+
+- 建议："复杂前端任务 — 推荐 Ralph-loop 迭代打磨"
+- 用户确认 → 按 `reference/ralph-integration.md` 创建 `.ralph/scratchpad.md`
+- 用户拒绝或 Ralph-loop 不可用 → agent 直接编码
+
+### `[fullstack]` → 后端先行，前端后续
+
+- 后端部分走 Codex exec
+- 前端部分走 agent 直接编码
+
+### 无标签 → Agent 直接实现
+
+## 依赖检查
+
+task 标记 `[depends:X]` 时，确认 X 已标记 `[x]` 后再开始。
+
+## 质量门禁（可选）
+
+### 技术评审（首次进入 change 时）
+
+仅当 change 的 tasks 全部未完成（首次进入）时执行：
+
+1. 读取 `reference/codex-prompts.md` 技术评审模板
+2. 填入 design.md、specs、tasks 内容
+3. Codex 可用 → `codex exec -m gpt-5 --full-auto --sandbox workspace-read "<prompt>"`
+4. 展示评审摘要，用户确认后继续
+5. Codex 不可用 → 跳过，标注已跳过
+
+继续已部分完成的 change 时：跳过技术评审。
+
+### 代码评审（全部 task 完成后）
+
+所有 task 标记 `[x]` 后执行：
+
+1. 读取 `reference/codex-prompts.md` 代码评审模板
+2. Codex 可用 → `codex exec -m gpt-5 --full-auto --sandbox workspace-read "<prompt>"`
+3. 有问题 → 修复 → 重新评审
+4. Codex 不可用 → 跳过，标注已跳过
+
+## 模型选择
+
+Codex CLI 默认模型：gpt-5（技术评审、复杂后端逻辑、安全敏感代码）。
+`[backend]` + `[simple]` 的明确模板化任务可建议快速模型，需用户确认。
