@@ -1,28 +1,32 @@
 projects:
   - name: claude-code-hub
+    # FIXME(2026-08-04): source_dir not found — disabled pending path update
+    # Original: /Users/gunegg/Works/vibe-me/claude-code-hub
     source_dir: /Users/gunegg/Works/vibe-me/claude-code-hub
     dockerfile_path: deploy/Dockerfile
     build_context: .
     image_name: claude-code-hub
     platform: linux/amd64
-    enabled: true
+    enabled: false
     envs:
       - env: skytech
-        version: 1.0.2
+        version: v-1.0.2
         built_commit: ccd6555
         harbor_project: ai.infra
 
   - name: claude-code-hub-neo
+    # FIXME(2026-08-04): source_dir not found — disabled pending path update
+    # Original: /Users/gunegg/Works/code_workspace/claude-code-hub-neo
     source_dir: /Users/gunegg/Works/code_workspace/claude-code-hub-neo
     dockerfile_path: deploy/Dockerfile
     build_context: .
     image_name: claude-code-hub-neo
     platform: linux/amd64
     build_args: APP_VERSION=${VERSION}
-    enabled: true
+    enabled: false
     envs:
       - env: skytech
-        version: 0.6.7
+        version: v-0.6.7
         built_commit: 616d4b8e
         harbor_project: ai.infra
         deploy:
@@ -32,7 +36,7 @@ projects:
           domain: hub.ai.internal
           container_port: 3000
       - env: home-134
-        version: 0.1.0
+        version: v-0.1.0
 
   - name: dan-flow-hub
     source_dir: /Users/gunegg/Works/vibe-me/dan-flow-cursor
@@ -43,7 +47,7 @@ projects:
     enabled: true
     envs:
       - env: skytech
-        version: 0.1.1
+        version: v-0.1.1
         built_commit: 86f23c1
         harbor_project: ai.infra
         deploy:
@@ -54,13 +58,13 @@ projects:
           path_prefix: /works
           container_port: 8000
       - env: office-31
-        version: 0.1.2
+        version: v-0.1.2
         built_commit: 02ba23f
         harbor_project: ai.infra
         deploy:
           intent: docker
       - env: home-134
-        version: 0.1.0
+        version: v-0.1.0
         built_commit: e1f5aab
 
   - name: vl-demo
@@ -86,7 +90,7 @@ projects:
     enabled: true
     envs:
       - env: skytech
-        version: 0.1.0
+        version: v-0.1.0
         built_commit: d99c311f
         harbor_project: ai.infra
 
@@ -101,7 +105,7 @@ projects:
     # Dockerfile uses USTC sparse crates.io mirror for builder network
     envs:
       - env: office-31
-        version: 0.25.1
+        version: v-0.25.1
         built_commit: fce93113
 
   - name: vibe-hedgedoc-frontend
@@ -114,6 +118,6 @@ projects:
     enabled: true
     envs:
       - env: skytech
-        version: 0.1.0
+        version: v-0.1.0
         built_commit: d99c311f
         harbor_project: ai.infra
