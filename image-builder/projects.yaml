@@ -41,20 +41,6 @@ projects:
         built_commit: 02d109b
         harbor_project: tax
 
-  - name: vibe-hedgedoc-backend
-    group: hedgedoc
-    source_dir: /Users/gunegg/Works/vibe-tech/vibe-hedgedoc/vibe-hedgedoc
-    dockerfile_path: backend/docker/Dockerfile
-    build_context: .
-    image_name: vibe-hedgedoc-backend
-    platform: linux/amd64
-    enabled: true
-    envs:
-      - env: skytech
-        version: v-0.1.0
-        built_commit: d99c311f
-        harbor_project: ai.infra
-
   - name: warpgate
     source_dir: /Users/gunegg/Works/code_workspace/warpgate
     dockerfile_path: docker/Dockerfile
@@ -69,16 +55,3 @@ projects:
         version: v-0.25.1
         built_commit: fce93113
 
-  - name: vibe-hedgedoc-frontend
-    group: hedgedoc
-    source_dir: /Users/gunegg/Works/vibe-tech/vibe-hedgedoc/vibe-hedgedoc
-    dockerfile_path: frontend/docker/Dockerfile
-    build_context: .
-    image_name: vibe-hedgedoc-frontend
-    platform: linux/amd64
-    enabled: true
-    envs:
-      - env: skytech
-        version: v-0.1.0
-        built_commit: d99c311f
-        harbor_project: ai.infra
