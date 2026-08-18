@@ -65,7 +65,7 @@ projects:
     envs:
       - env: office-31
         version: v-0.1.0
-        built_commit: 2fc99f9dbe509596c9903cefe275ff4725d1332a
+        built_commit: eaaa3a7bb9d4382a66b463015711a85da2fd4ce6
         harbor_project: ai.infra
         push_latest: false
         deploy:
