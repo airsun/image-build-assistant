@@ -55,3 +55,17 @@ projects:
         version: v-0.25.1
         built_commit: fce93113
 
+  - name: agentic-techlab-wiki-infra
+    source_dir: /Users/gunegg/Works/vibe-infra/agentic-techlab-wiki-infra/.worktrees/b-0.1.0-rc
+    dockerfile_path: Dockerfile
+    build_context: .
+    image_name: agentic-techlab-wiki-infra
+    platform: linux/amd64
+    enabled: true
+    envs:
+      - env: office-31
+        version: v-0.1.0
+        built_commit: f556d3525528b633e5d7c0fa00c31d7485fe8d69
+        harbor_project: ai.infra
+        deploy:
+          intent: docker
