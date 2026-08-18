@@ -33,6 +33,7 @@ assert_eq "${ENABLED}" true "enabled state"
 assert_eq "${ENV_NAME}" office-31 "environment"
 assert_eq "${VERSION}" v-0.1.0 "image version"
 assert_eq "${HARBOR_PROJECT}" ai.infra "Harbor project"
+assert_eq "${PUSH_LATEST}" false "mutable latest policy"
 assert_eq "${DEPLOY_INTENT}" docker "deploy intent"
 
 [[ "${BUILT_COMMIT}" =~ ^[0-9a-f]{40}$ ]] || fail "built_commit must be a full lowercase Git commit"

@@ -39,6 +39,7 @@ build_image_reset_state() {
   REQUESTED_VERSION=""
   REQUESTED_PLATFORM=""
   REQUESTED_PUSH=""
+  REQUESTED_PUSH_LATEST=""
   REQUESTED_ENV=""
   REQUESTED_GROUP=""
   BUILD_ARGS=""
@@ -73,6 +74,7 @@ build_image_load_remote_config() {
   DEFAULT_HARBOR_PROJECT="${HARBOR_PROJECT:-library}"
   DEFAULT_PLATFORM="${PLATFORM:-linux/amd64}"
   PUSH="${PUSH:-true}"
+  DEFAULT_PUSH_LATEST="${PUSH_LATEST:-true}"
 
   [[ -n "${REMOTE_HOST}" ]] || {
     build_image_die "Missing required remote config: REMOTE_HOST"
@@ -137,6 +139,10 @@ build_image_parse_args() {
         ;;
       --push)
         REQUESTED_PUSH="$2"
+        shift 2
+        ;;
+      --push-latest)
+        REQUESTED_PUSH_LATEST="$2"
         shift 2
         ;;
       --env)
@@ -230,6 +236,7 @@ build_image_merge_settings() {
 
   VERSION="${REQUESTED_VERSION:-${VERSION}}"
   PUSH="${REQUESTED_PUSH:-${PUSH}}"
+  PUSH_LATEST="${REQUESTED_PUSH_LATEST:-${PUSH_LATEST:-${DEFAULT_PUSH_LATEST}}}"
 }
 
 build_image_validate_enabled_state() {
@@ -247,6 +254,13 @@ build_image_validate_inputs() {
   local dockerfile_abspath=""
 
   validate_project_settings || return $?
+  case "${PUSH_LATEST}" in
+    true|false) ;;
+    *)
+      build_image_die "--push-latest must be true or false"
+      return 1
+      ;;
+  esac
   DOCKERFILE_PATH="$(build_image_normalize_dockerfile_path "${DOCKERFILE_PATH}")" || return 1
   dockerfile_abspath="${SOURCE_DIR}/${DOCKERFILE_PATH}"
   [[ -f "${dockerfile_abspath}" ]] || {

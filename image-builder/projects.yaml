@@ -67,5 +67,6 @@ projects:
         version: v-0.1.0
         built_commit: 2fc99f9dbe509596c9903cefe275ff4725d1332a
         harbor_project: ai.infra
+        push_latest: false
         deploy:
           intent: docker

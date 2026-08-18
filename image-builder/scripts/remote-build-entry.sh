@@ -57,6 +57,7 @@ remote_entry_init() {
   VERSION="${VERSION:-latest}"
   PLATFORM="${PLATFORM:-linux/amd64}"
   PUSH="${PUSH:-true}"
+  PUSH_LATEST="${PUSH_LATEST:-true}"
   BUILD_ARGS="${BUILD_ARGS:-}"
 
   [[ -n "${REMOTE_BASE_DIR}" ]] || {
@@ -67,6 +68,13 @@ remote_entry_init() {
     remote_entry_error "HARBOR_HOST is required when PUSH=true"
     return 1
   fi
+  case "${PUSH_LATEST}" in
+    true|false) ;;
+    *)
+      remote_entry_error "PUSH_LATEST must be true or false"
+      return 1
+      ;;
+  esac
   [[ -n "${RUN_ID}" ]] || {
     remote_entry_error "RUN_ID is required"
     return 1
@@ -162,9 +170,14 @@ remote_entry_run_build() {
   local full_image=""
   local context_dir=""
   local build_arg_flags=()
+  local tag_flags=()
 
   full_image="$(remote_entry_resolve_image_tag)"
   context_dir="$(remote_entry_resolve_context_dir)"
+  tag_flags=(-t "${full_image}:${VERSION}")
+  if [[ "${PUSH_LATEST}" == "true" ]]; then
+    tag_flags+=(-t "${full_image}:latest")
+  fi
 
   [[ -d "${context_dir}" ]] || {
     remote_entry_error "Resolved build context not found: ${context_dir}"
@@ -184,14 +197,15 @@ remote_entry_run_build() {
     --platform "${PLATFORM}" \
     -f "${REMOTE_ENTRY_STAGED_DOCKERFILE}" \
     "${build_arg_flags[@]+"${build_arg_flags[@]}"}" \
-    -t "${full_image}:${VERSION}" \
-    -t "${full_image}:latest" \
+    "${tag_flags[@]}" \
     "${context_dir}"
 
   if [[ "${PUSH}" == "true" && -n "${HARBOR_HOST}" ]]; then
     remote_entry_log "Pushing image ${full_image}:${VERSION}"
     docker push "${full_image}:${VERSION}"
-    docker push "${full_image}:latest"
+    if [[ "${PUSH_LATEST}" == "true" ]]; then
+      docker push "${full_image}:latest"
+    fi
   fi
 }
 

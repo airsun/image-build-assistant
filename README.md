@@ -122,6 +122,7 @@ bash image-builder/build.sh \
 | `HARBOR_PROJECT` | 未在 `projects.yaml` 的 env 中写 `harbor_project` 时的默认 Harbor 项目 | `library` |
 | `PLATFORM` | 默认构建平台 | `linux/amd64` |
 | `PUSH` | 构建后是否推送 | `true` |
+| `PUSH_LATEST` | 是否同时 tag/push mutable `latest`；可由项目环境的 `push_latest` 覆盖 | `true` |
 
 #### Deploy Host（`DEPLOY_*`，清单推送）
 
@@ -178,6 +179,7 @@ bash image-builder/build.sh [选项]
 | `--version TAG` | 指定版本标签 |
 | `--platform PLATFORM` | 覆盖构建平台 |
 | `--push true\|false` | 是否推送到 Harbor |
+| `--push-latest true\|false` | 是否同时 tag/push mutable `latest`；version-only 发布应设为 `false` |
 | `--config PATH` | 指定远端环境文件路径（默认 `image-builder/remote.env`） |
 | `--projects PATH` | 指定 projects.yaml 路径 |
 

@@ -17,6 +17,7 @@ project_resolver_clear() {
   VERSION=""
   BUILT_COMMIT=""
   BUILD_ARGS=""
+  PUSH_LATEST=""
   DEPLOY_INTENT=""
   DEPLOY_NAMESPACE=""
   DEPLOY_CLUSTER=""
@@ -295,6 +296,7 @@ resolve_project_by_name() {
   VERSION="$(project_resolver_parse_env_field "${registry_path}" "${project_name}" "${env_name}" "version")"
   BUILT_COMMIT="$(project_resolver_parse_env_field "${registry_path}" "${project_name}" "${env_name}" "built_commit")"
   HARBOR_PROJECT="$(project_resolver_parse_env_field "${registry_path}" "${project_name}" "${env_name}" "harbor_project")"
+  PUSH_LATEST="$(project_resolver_parse_env_field "${registry_path}" "${project_name}" "${env_name}" "push_latest")"
 
   # Deploy fields (inside env)
   DEPLOY_INTENT="$(project_resolver_parse_env_deploy_field "${registry_path}" "${project_name}" "${env_name}" "intent")"

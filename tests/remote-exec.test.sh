@@ -116,6 +116,7 @@ test_remote_exec_upload_and_execute_contract() {
   assert_contains "$(cat "${ssh_log}")" "UPLOADED_DOCKERFILE_PATH=/srv/image-build-assistant/dockerfile-run-001" "should pass dockerfile path to remote entry"
   assert_contains "$(cat "${ssh_log}")" "DOCKERFILE_PATH=deploy/Dockerfile" "should pass logical dockerfile path"
   assert_contains "$(cat "${ssh_log}")" "BUILD_CONTEXT=." "should pass build context"
+  assert_contains "$(cat "${ssh_log}")" "PUSH_LATEST=true" "should pass the default latest-tag policy"
 }
 
 test_remote_entry_builds_and_pushes_root_context() {
@@ -245,10 +246,64 @@ test_remote_entry_builds_subdir_context_without_push() {
   fi
 }
 
+test_remote_entry_can_push_only_the_versioned_tag() {
+  local case_dir="${TEST_TMPDIR}/remote-version-only"
+  local base_dir="${case_dir}/remote"
+  local uploaded_archive="${base_dir}/context-uploaded.tar.gz"
+  local uploaded_dockerfile="${base_dir}/dockerfile-uploaded"
+  local status=0
+
+  mkdir -p "${base_dir}"
+  : > "${uploaded_archive}"
+  : > "${uploaded_dockerfile}"
+
+  (
+    set -euo pipefail
+    source "${ASSISTANT_ROOT}/image-builder/scripts/remote-build-entry.sh"
+
+    REMOTE_BASE_DIR="${base_dir}"
+    RUN_ID="run-version-only"
+    UPLOADED_ARCHIVE_PATH="${uploaded_archive}"
+    UPLOADED_DOCKERFILE_PATH="${uploaded_dockerfile}"
+    DOCKERFILE_PATH="Dockerfile"
+    BUILD_CONTEXT="."
+    HARBOR_HOST="harbor.test.example.com"
+    HARBOR_PROJECT="ai.infra"
+    IMAGE_NAME="agentic-techlab-wiki-infra"
+    VERSION="v-0.1.0"
+    PLATFORM="linux/amd64"
+    PUSH="true"
+    PUSH_LATEST="false"
+
+    tar() {
+      local destination=""
+      while (($# > 0)); do
+        if [[ "$1" == "-C" ]]; then destination="$2"; shift 2; continue; fi
+        shift
+      done
+      mkdir -p "${destination}"
+      : > "${destination}/package.json"
+    }
+
+    docker() {
+      printf '%s\n' "$*" >> "${REMOTE_BASE_DIR}/docker.log"
+    }
+
+    remote_entry_main
+  ) || status=$?
+
+  assert_eq "${status}" "0" "version-only remote entry should succeed"
+  assert_contains "$(cat "${base_dir}/docker.log")" "push harbor.test.example.com/ai.infra/agentic-techlab-wiki-infra:v-0.1.0" "version tag should be pushed"
+  if grep -q 'latest' "${base_dir}/docker.log"; then
+    fail "version-only build must not tag or push latest"
+  fi
+}
+
 run_all_tests() {
   test_remote_exec_upload_and_execute_contract
   test_remote_entry_builds_and_pushes_root_context
   test_remote_entry_builds_subdir_context_without_push
+  test_remote_entry_can_push_only_the_versioned_tag
   printf 'PASS: remote exec tests\n'
 }
 
