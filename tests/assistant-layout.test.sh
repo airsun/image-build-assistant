@@ -17,7 +17,11 @@ required_paths=(
   "image-builder/scripts/project-resolver.sh"
   "image-builder/scripts/remote-exec.sh"
   "image-builder/scripts/remote-build-entry.sh"
+  "image-builder/scripts/remote-code-pull.sh"
   "docs/usage.md"
+  "docs/specs/oss-remote-pull.md"
+  ".claude/skills/oss-image-build/SKILL.md"
+  ".cursor/skills/oss-image-build/SKILL.md"
 )
 
 for path in "${required_paths[@]}"; do

@@ -91,3 +91,37 @@ remote_exec_upload_and_execute() {
 
   ssh $(remote_exec_ssh_options) "$(remote_exec_ssh_target)" "${remote_command}"
 }
+
+# Build from a source tree that already lives on the build host (remote
+# source mode, see docs/specs/oss-remote-pull.md). Only the entry script is
+# uploaded; the source tree stays in place on the builder.
+remote_exec_remote_source_build() {
+  local run_id="$1"
+  local remote_entry_path="${REMOTE_BASE_DIR}/remote-build-entry.sh"
+  local remote_command=""
+
+  remote_exec_prepare_remote_base
+
+  scp $(remote_exec_scp_options) \
+    "${REMOTE_EXEC_SCRIPT_DIR}/remote-build-entry.sh" \
+    "$(remote_exec_ssh_target):${remote_entry_path}"
+
+  printf -v remote_command \
+    'env REMOTE_BASE_DIR=%q RUN_ID=%q REMOTE_SOURCE_DIR=%q DOCKERFILE_PATH=%q BUILD_CONTEXT=%q HARBOR_HOST=%q HARBOR_PROJECT=%q IMAGE_NAME=%q VERSION=%q PLATFORM=%q PUSH=%q PUSH_LATEST=%q BUILD_ARGS=%q bash %q' \
+    "${REMOTE_BASE_DIR}" \
+    "${run_id}" \
+    "${SOURCE_DIR}" \
+    "${DOCKERFILE_PATH}" \
+    "${BUILD_CONTEXT}" \
+    "${HARBOR_HOST}" \
+    "${HARBOR_PROJECT}" \
+    "${IMAGE_NAME}" \
+    "${VERSION}" \
+    "${PLATFORM}" \
+    "${PUSH}" \
+    "${PUSH_LATEST:-true}" \
+    "${BUILD_ARGS:-}" \
+    "${remote_entry_path}"
+
+  ssh $(remote_exec_ssh_options) "$(remote_exec_ssh_target)" "${remote_command}"
+}

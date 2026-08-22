@@ -47,6 +47,7 @@ remote_entry_clear_directory() {
 remote_entry_init() {
   REMOTE_BASE_DIR="${REMOTE_BASE_DIR:-}"
   RUN_ID="${RUN_ID:-}"
+  REMOTE_SOURCE_DIR="${REMOTE_SOURCE_DIR:-}"
   UPLOADED_ARCHIVE_PATH="${UPLOADED_ARCHIVE_PATH:-}"
   UPLOADED_DOCKERFILE_PATH="${UPLOADED_DOCKERFILE_PATH:-}"
   DOCKERFILE_PATH="${DOCKERFILE_PATH:-}"
@@ -79,14 +80,23 @@ remote_entry_init() {
     remote_entry_error "RUN_ID is required"
     return 1
   }
-  [[ -n "${UPLOADED_ARCHIVE_PATH}" ]] || {
-    remote_entry_error "UPLOADED_ARCHIVE_PATH is required"
-    return 1
-  }
-  [[ -n "${UPLOADED_DOCKERFILE_PATH}" ]] || {
-    remote_entry_error "UPLOADED_DOCKERFILE_PATH is required"
-    return 1
-  }
+  if [[ -n "${REMOTE_SOURCE_DIR}" ]]; then
+    # Expand a leading ~/ against the builder user's home, keeping the
+    # projects.yaml path portable across build hosts. Restricting to ~/
+    # avoids mis-expanding ~user/ paths, which are not a supported form.
+    case "${REMOTE_SOURCE_DIR}" in
+      "~/"*) REMOTE_SOURCE_DIR="${HOME}${REMOTE_SOURCE_DIR#"~"}" ;;
+    esac
+  else
+    [[ -n "${UPLOADED_ARCHIVE_PATH}" ]] || {
+      remote_entry_error "UPLOADED_ARCHIVE_PATH is required"
+      return 1
+    }
+    [[ -n "${UPLOADED_DOCKERFILE_PATH}" ]] || {
+      remote_entry_error "UPLOADED_DOCKERFILE_PATH is required"
+      return 1
+    }
+  fi
   [[ -n "${DOCKERFILE_PATH}" ]] || {
     remote_entry_error "DOCKERFILE_PATH is required"
     return 1
@@ -127,6 +137,21 @@ remote_entry_stage_inputs() {
   mv "${UPLOADED_DOCKERFILE_PATH}" "${REMOTE_ENTRY_STAGED_DOCKERFILE}"
 }
 
+remote_entry_stage_remote_source() {
+  [[ -n "${REMOTE_SOURCE_DIR}" ]] || {
+    remote_entry_error "REMOTE_SOURCE_DIR is required in remote source mode"
+    return 1
+  }
+  [[ -d "${REMOTE_SOURCE_DIR}" ]] || {
+    remote_entry_error "Remote source directory not found: ${REMOTE_SOURCE_DIR}"
+    return 1
+  }
+  [[ -f "${REMOTE_SOURCE_DIR}/${DOCKERFILE_PATH}" ]] || {
+    remote_entry_error "Dockerfile not found in remote source: ${REMOTE_SOURCE_DIR}/${DOCKERFILE_PATH}"
+    return 1
+  }
+}
+
 remote_entry_unpack_context() {
   remote_entry_clear_directory "${REMOTE_ENTRY_WORKSPACE_DIR}"
   mkdir -p "${REMOTE_ENTRY_CONTEXT_DIR}"
@@ -134,7 +159,13 @@ remote_entry_unpack_context() {
 }
 
 remote_entry_resolve_context_dir() {
-  if [[ "${BUILD_CONTEXT}" == "." ]]; then
+  if [[ -n "${REMOTE_SOURCE_DIR}" ]]; then
+    if [[ "${BUILD_CONTEXT}" == "." ]]; then
+      printf '%s\n' "${REMOTE_SOURCE_DIR}"
+    else
+      printf '%s\n' "${REMOTE_SOURCE_DIR}/${BUILD_CONTEXT}"
+    fi
+  elif [[ "${BUILD_CONTEXT}" == "." ]]; then
     printf '%s\n' "${REMOTE_ENTRY_CONTEXT_DIR}"
   else
     printf '%s\n' "${REMOTE_ENTRY_CONTEXT_DIR}/${BUILD_CONTEXT}"
@@ -169,6 +200,7 @@ remote_entry_resolve_image_tag() {
 remote_entry_run_build() {
   local full_image=""
   local context_dir=""
+  local dockerfile_path=""
   local build_arg_flags=()
   local tag_flags=()
 
@@ -184,6 +216,12 @@ remote_entry_run_build() {
     return 1
   }
 
+  if [[ -n "${REMOTE_SOURCE_DIR}" ]]; then
+    dockerfile_path="${REMOTE_SOURCE_DIR}/${DOCKERFILE_PATH}"
+  else
+    dockerfile_path="${REMOTE_ENTRY_STAGED_DOCKERFILE}"
+  fi
+
   while IFS= read -r line; do
     [[ -n "${line}" ]] && build_arg_flags+=("${line}")
   done < <(remote_entry_expand_build_args)
@@ -195,7 +233,7 @@ remote_entry_run_build() {
   remote_entry_log "Building image ${full_image}:${VERSION}"
   docker build \
     --platform "${PLATFORM}" \
-    -f "${REMOTE_ENTRY_STAGED_DOCKERFILE}" \
+    -f "${dockerfile_path}" \
     "${build_arg_flags[@]+"${build_arg_flags[@]}"}" \
     "${tag_flags[@]}" \
     "${context_dir}"
@@ -247,8 +285,12 @@ remote_entry_main() {
   trap 'status=$?; remote_entry_cleanup "${status}"; exit "${status}"' EXIT
 
   remote_entry_log "Preparing remote build workspace under ${REMOTE_BASE_DIR}"
-  remote_entry_stage_inputs
-  remote_entry_unpack_context
+  if [[ -n "${REMOTE_SOURCE_DIR}" ]]; then
+    remote_entry_stage_remote_source
+  else
+    remote_entry_stage_inputs
+    remote_entry_unpack_context
+  fi
   remote_entry_run_build
 }
 

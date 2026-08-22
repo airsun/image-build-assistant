@@ -8,6 +8,8 @@ project_resolver_error() {
 project_resolver_clear() {
   PROJECT_NAME=""
   SOURCE_DIR=""
+  SOURCE_MODE=""
+  UPSTREAM_URL=""
   DOCKERFILE_PATH=""
   BUILD_CONTEXT=""
   IMAGE_NAME=""
@@ -285,6 +287,9 @@ resolve_project_by_name() {
 
   # Project-level fields
   SOURCE_DIR="$(project_resolver_parse_field "${registry_path}" "${project_name}" "source_dir")"
+  SOURCE_MODE="$(project_resolver_parse_field "${registry_path}" "${project_name}" "source_mode")"
+  SOURCE_MODE="${SOURCE_MODE:-local}"
+  UPSTREAM_URL="$(project_resolver_parse_field "${registry_path}" "${project_name}" "upstream_url")"
   DOCKERFILE_PATH="$(project_resolver_parse_field "${registry_path}" "${project_name}" "dockerfile_path")"
   BUILD_CONTEXT="$(project_resolver_parse_field "${registry_path}" "${project_name}" "build_context")"
   IMAGE_NAME="$(project_resolver_parse_field "${registry_path}" "${project_name}" "image_name")"
@@ -307,7 +312,11 @@ resolve_project_by_name() {
   DEPLOYED_VERSION="$(project_resolver_parse_env_deploy_field "${registry_path}" "${project_name}" "${env_name}" "deployed_version")"
   DEPLOYED_COMMIT="$(project_resolver_parse_env_deploy_field "${registry_path}" "${project_name}" "${env_name}" "deployed_commit")"
 
-  SOURCE_DIR="$(project_resolver_normalize_source_dir "${registry_path}" "${SOURCE_DIR}")"
+  # Remote source dirs live on the build host (e.g. ~/code_workspaces/repo);
+  # keep them verbatim for the remote entry script to expand at build time.
+  if [[ "${SOURCE_MODE}" != "remote" ]]; then
+    SOURCE_DIR="$(project_resolver_normalize_source_dir "${registry_path}" "${SOURCE_DIR}")"
+  fi
 }
 
 merge_project_settings() {

@@ -177,6 +177,7 @@ build_image_apply_manual_project() {
   project_resolver_clear
   PROJECT_NAME="${REQUESTED_PROJECT:-manual}"
   SOURCE_DIR="${REQUESTED_SOURCE_DIR}"
+  SOURCE_MODE="local"
   DOCKERFILE_PATH="${REQUESTED_DOCKERFILE_PATH}"
   BUILD_CONTEXT="${REQUESTED_BUILD_CONTEXT}"
   IMAGE_NAME="${REQUESTED_IMAGE_NAME}"
@@ -196,7 +197,7 @@ build_image_normalize_dockerfile_path() {
 
   case "${dockerfile_realpath}" in
     "${source_realpath}"|"${source_realpath}"/*)
-      printf '%s\n' "${dockerfile_realpath#${source_realpath}/}"
+      printf '%s\n' "${dockerfile_realpath#"${source_realpath}"/}"
       ;;
     *)
       build_image_die "Dockerfile path must stay within source directory: ${raw_dockerfile_path}"
@@ -261,6 +262,17 @@ build_image_validate_inputs() {
       return 1
       ;;
   esac
+
+  # Remote source projects resolve the Dockerfile on the build host; the
+  # local machine never sees the source tree.
+  if [[ "${SOURCE_MODE:-local}" == "remote" ]]; then
+    [[ -n "${UPSTREAM_URL:-}" ]] || {
+      build_image_die "upstream_url is required for remote source projects"
+      return 1
+    }
+    return 0
+  fi
+
   DOCKERFILE_PATH="$(build_image_normalize_dockerfile_path "${DOCKERFILE_PATH}")" || return 1
   dockerfile_abspath="${SOURCE_DIR}/${DOCKERFILE_PATH}"
   [[ -f "${dockerfile_abspath}" ]] || {
@@ -286,12 +298,19 @@ build_image_execute_build() {
   local dockerfile_abspath=""
   local run_id=""
 
-  dockerfile_abspath="${SOURCE_DIR}/${DOCKERFILE_PATH}"
   run_id="$(build_image_make_run_id)"
+  build_image_setup_logging
+
+  if [[ "${SOURCE_MODE:-local}" == "remote" ]]; then
+    build_image_log "Building ${PROJECT_NAME} from remote source ${SOURCE_DIR}"
+    remote_exec_remote_source_build "${run_id}"
+    build_image_log "Remote build complete for ${IMAGE_NAME}:${VERSION}"
+    return 0
+  fi
+
+  dockerfile_abspath="${SOURCE_DIR}/${DOCKERFILE_PATH}"
   archive_path="$(mktemp "/tmp/image-build-context-${run_id}.XXXXXX.tar.gz")"
   trap "rm -f $(printf '%q' "${archive_path}")" RETURN
-
-  build_image_setup_logging
 
   build_image_log "Packaging ${PROJECT_NAME} from ${SOURCE_DIR}"
   create_build_context_archive "${SOURCE_DIR}" "${BUILD_CONTEXT}" "${archive_path}" >/dev/null
