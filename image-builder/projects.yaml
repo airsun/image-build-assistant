@@ -70,3 +70,19 @@ projects:
         push_latest: false
         deploy:
           intent: docker
+
+  - name: drawnix
+    source_mode: remote
+    source_dir: ~/code_workspaces/drawnix
+    upstream_url: git@github.com:plait-board/drawnix.git
+    dockerfile_path: Dockerfile
+    build_context: .
+    image_name: drawnix
+    platform: linux/amd64
+    enabled: true
+    envs:
+      - env: office-32
+        version: v-0.4.1
+        built_commit: e2844f1
+        harbor_project: ai.infra
+        push_latest: false
