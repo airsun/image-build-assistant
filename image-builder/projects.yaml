@@ -8,8 +8,8 @@ projects:
     enabled: true
     envs:
       - env: skytech
-        version: v-0.1.1
-        built_commit: 86f23c1
+        version: v-0.1.2
+        built_commit: 20d88f8
         harbor_project: ai.infra
         deploy:
           intent: k8s
@@ -86,3 +86,32 @@ projects:
         built_commit: e2844f1
         harbor_project: ai.infra
         push_latest: false
+
+  - name: open-design
+    source_mode: remote
+    source_dir: ~/code_workspaces/open-design
+    upstream_url: git@github.com:nexu-io/open-design.git
+    dockerfile_path: deploy/Dockerfile
+    build_context: .
+    image_name: open-design
+    platform: linux/amd64
+    enabled: true
+    envs:
+      - env: office-32
+        version: v-0.22.1
+        built_commit: ee76e93c7
+        harbor_project: ai.infra
+        push_latest: false
+
+  - name: cbam
+    source_dir: /Users/gunegg/Works/vibe-carbon/cbam
+    dockerfile_path: mcp-server/deploy/Dockerfile
+    build_context: mcp-server/
+    image_name: cbam-reporting-mcp
+    platform: linux/amd64
+    enabled: true
+    envs:
+      - env: office-32
+        version: v-0.2.0
+        built_commit: 6145b6b
+        harbor_project: ai.infra
