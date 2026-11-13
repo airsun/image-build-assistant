@@ -295,9 +295,30 @@ AI 识别到覆盖意图，bump patch 后构建推送。
 
 ### 前置条件
 
-- 在 Claude Code（或同类）会话中打开本仓库
+- 在 Claude Code（或同类）会话中打开本仓库，**或**已安装全局技能 `image-build`（见下节，双上下文可用）
 - 已准备远端环境文件：`image-builder/remote.env` **或** `image-builder/remote-envs/<环境>.env`，并在构建/部署命令中用 `--config` 指向实际使用的文件
 - 目标业务仓库中有可用的 Dockerfile（路径登记在 `projects.yaml` 的 `dockerfile_path`）
+
+### 作为全局技能使用（image-build）
+
+本地源码目录构建流已封装为技能 **`image-build`**（`.claude/skills/` 与 `.cursor/skills/` 双份，逐字节一致），支持两种执行上下文：
+
+| 上下文 | 场景 | 定位方式 |
+|--------|------|---------|
+| 目标项目会话（桥接） | 在任意业务仓库的会话中构建该仓库自身镜像 | `IMAGE_BUILD_HOME` env → cwd 向上探测 → `~/.config/image-build-assistant/home` |
+| image-build-assistant 会话（集中） | 集中管理模式，行为与现在一致 | 同上，cwd 探测直接命中 |
+
+**状态始终集中在 image-build-assistant 仓库**：无论从哪个会话执行，`projects.yaml` / `logs/` / `deploys/` / `remote-envs/` 的读写都发生在 `image-builder/` 目录，目标会话不写本地状态。
+
+安装（symlink 指向本仓库，单一真相源）：
+
+```bash
+bash image-builder/scripts/setup-skill.sh          # 安装；--dry-run 预览
+```
+
+之后重启 Claude Code / Cursor 会话生效。`IMAGE_BUILD_HOME` 为可选的显式覆盖通道（默认不注入 shell rc，GUI 启动的会话经 config 文件定位）。
+
+与 `oss-image-build` 的分工：git URL（https:// / git@ / ssh://）输入属 `oss-image-build`（remote 流，仅随本仓库加载）；本地目录 / local 项目名属 `image-build`。详见 [docs/specs/image-build-skill.md](docs/specs/image-build-skill.md)。
 
 ### 其它文档
 

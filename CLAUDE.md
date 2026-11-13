@@ -259,6 +259,8 @@ bash build.sh --config image-builder/remote-envs/skytech.env --project hub-neo -
 
 ## 镜像版本管理
 
+> 本地源码目录构建流已封装为技能 `image-build`（`.claude` 与 `.cursor` 双份，symlink 装至个人级），可在任意项目会话（双上下文）经 IB_ROOT 解析链调用；本节流程即该技能在本仓库会话的执行路径。详见 `docs/specs/image-build-skill.md`。
+
 构建镜像时，AI 层负责版本决策，详见 `docs/specs/semver-versioning.md`。核心规则：
 
 1. 读取 `projects.yaml` 的 `version` 和 `built_commit`
